@@ -55,7 +55,7 @@ export const jobs: JobListing[] = [
     companyInfo: {
       name: 'Dribbble',
       website: 'https://dribbble.com',
-      description: 'Dribbble is the leading destination to find & showcase creative work and home to the world's best design professionals.',
+      description: 'Dribbble is the leading destination to find & showcase creative work and home to the world\'s best design professionals.',
       employees: '50-100',
       headquarters: 'San Francisco, CA',
       founded: '2009'
@@ -73,7 +73,7 @@ export const jobs: JobListing[] = [
     tags: ['React', 'TypeScript', 'CSS', 'Frontend'],
     postedAt: '3 days ago',
     featured: true,
-    description: 'Join our frontend team to build engaging user experiences for millions of music lovers around the world. You'll work on our web application using modern technologies.',
+    description: 'Join our frontend team to build engaging user experiences for millions of music lovers around the world. You\'ll work on our web application using modern technologies.',
     requirements: [
       '3+ years of experience with React',
       'Strong knowledge of TypeScript',
@@ -109,7 +109,7 @@ export const jobs: JobListing[] = [
     tags: ['Product Management', 'Agile', 'B2B', 'SaaS'],
     postedAt: '1 week ago',
     featured: false,
-    description: 'We're looking for a talented Product Manager to help us define and execute our product vision. You'll work closely with engineering, design, and other stakeholders to build products that users love.',
+    description: 'We\'re looking for a talented Product Manager to help us define and execute our product vision. You\'ll work closely with engineering, design, and other stakeholders to build products that users love.',
     requirements: [
       '4+ years of product management experience',
       'Experience with B2B SaaS products',
@@ -145,7 +145,7 @@ export const jobs: JobListing[] = [
     tags: ['Python', 'Machine Learning', 'SQL', 'Data Analysis'],
     postedAt: '2 weeks ago',
     featured: false,
-    description: 'Join our data science team to help us understand user behavior and improve our recommendation algorithms. You'll analyze large datasets and build models to enhance the Netflix experience.',
+    description: 'Join our data science team to help us understand user behavior and improve our recommendation algorithms. You\'ll analyze large datasets and build models to enhance the Netflix experience.',
     requirements: [
       'MS or PhD in Computer Science, Statistics, or related field',
       'Strong programming skills in Python',
@@ -181,7 +181,7 @@ export const jobs: JobListing[] = [
     tags: ['Node.js', 'Python', 'AWS', 'Backend'],
     postedAt: '3 weeks ago',
     featured: false,
-    description: 'We are seeking a Backend Engineer to join our team and help build scalable systems that power the Airbnb platform. You'll work on high-performance APIs and services that millions of users rely on.',
+    description: 'We are seeking a Backend Engineer to join our team and help build scalable systems that power the Airbnb platform. You\'ll work on high-performance APIs and services that millions of users rely on.',
     requirements: [
       '5+ years of backend development experience',
       'Proficiency in Node.js, Python, or Ruby',
@@ -217,7 +217,7 @@ export const jobs: JobListing[] = [
     tags: ['Digital Marketing', 'Content Strategy', 'SEO', 'Analytics'],
     postedAt: '1 month ago',
     featured: false,
-    description: 'We're looking for a Marketing Manager to lead our digital marketing efforts. You'll develop and execute marketing strategies to drive awareness and adoption of our creative products.',
+    description: 'We\'re looking for a Marketing Manager to lead our digital marketing efforts. You\'ll develop and execute marketing strategies to drive awareness and adoption of our creative products.',
     requirements: [
       '5+ years of experience in digital marketing',
       'Strong analytical skills and experience with marketing metrics',
@@ -253,7 +253,7 @@ export const jobs: JobListing[] = [
     tags: ['Docker', 'Kubernetes', 'CI/CD', 'AWS', 'Infrastructure'],
     postedAt: '2 days ago',
     featured: true,
-    description: 'Join our infrastructure team to help scale and maintain our cloud-based systems. You'll work on automation, monitoring, and improving our deployment pipelines.',
+    description: 'Join our infrastructure team to help scale and maintain our cloud-based systems. You\'ll work on automation, monitoring, and improving our deployment pipelines.',
     requirements: [
       '4+ years of DevOps or SRE experience',
       'Experience with containerization and orchestration',
@@ -289,7 +289,7 @@ export const jobs: JobListing[] = [
     tags: ['iOS', 'Swift', 'Android', 'Kotlin', 'Mobile'],
     postedAt: '4 days ago',
     featured: false,
-    description: 'We're looking for a talented Mobile Developer to join our team and help build our next-generation mobile applications. You'll work on feature development and performance optimization.',
+    description: 'We\'re looking for a talented Mobile Developer to join our team and help build our next-generation mobile applications. You\'ll work on feature development and performance optimization.',
     requirements: [
       '4+ years of mobile development experience',
       'Proficiency in Swift/iOS or Kotlin/Android',
