@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { 
   Select,
   SelectContent,
@@ -28,8 +28,9 @@ const CreateJob = () => {
     contact_phone: '',
     contact_email: '',
     contact_telegram: '',
-    isPremium: false, // Флаг для платных вакансий
+    isPremium: false, // Выделение вакансии в поиске
     isFeatured: false, // Флаг для рекомендуемых вакансий
+    status: 'draft' as 'draft' | 'review' | 'published',
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -113,20 +114,26 @@ const CreateJob = () => {
     setIsSubmitting(true);
     
     // TODO: Отправить данные на сервер
-    // TODO: Реализовать платную публикацию вакансий
-    // TODO: Реализовать обработку рекомендуемых/выделенных вакансий
+    // TODO: Реализовать платную публикацию вакансий (выделение в поиске)
+    // TODO: Реализовать обработку рекомендуемых вакансий (добавление в блок рекомендуемых)
+    
     setTimeout(() => {
       setIsSubmitting(false);
+      const statusMessage = formData.status === 'published' 
+        ? 'опубликована' 
+        : formData.status === 'review' 
+          ? 'отправлена на проверку' 
+          : 'сохранена как черновик';
+          
       toast({
         title: 'Вакансия создана',
-        description: formData.isPremium 
-          ? 'Ваша вакансия успешно опубликована и будет выделена среди остальных' 
-          : 'Ваша вакансия успешно опубликована'
+        description: `Ваша вакансия успешно ${statusMessage}${formData.isPremium ? ' и будет выделена в результатах поиска' : ''}`,
+        duration: 5000, // Автозакрытие через 5 секунд
       });
       navigate('/my-jobs');
     }, 1000);
   };
-  
+
   return (
     <div className="container-custom px-4">
       <section className="pt-6 pb-4">
@@ -245,7 +252,7 @@ const CreateJob = () => {
                   className={errors.requirements ? 'border-destructive' : ''}
                   autoResize={true}
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Каждое требование с новой строки
                 </p>
                 {errors.requirements && <p className="text-xs text-destructive mt-1">{errors.requirements}</p>}
@@ -262,7 +269,7 @@ const CreateJob = () => {
                   className={errors.responsibilities ? 'border-destructive' : ''}
                   autoResize={true}
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Каждая обязанность с новой строки
                 </p>
                 {errors.responsibilities && <p className="text-xs text-destructive mt-1">{errors.responsibilities}</p>}
@@ -326,7 +333,7 @@ const CreateJob = () => {
                   {errors.contact_telegram && <p className="text-xs text-destructive mt-1">{errors.contact_telegram}</p>}
                 </div>
               </div>
-              <p className="text-xs text-gray-500">* Укажите хотя бы один способ связи (телефон, email или Telegram)</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">* Укажите хотя бы один способ связи (телефон, email или Telegram)</p>
             </div>
           </div>
           
@@ -348,7 +355,7 @@ const CreateJob = () => {
                   htmlFor="isPremium"
                   className="ml-2 block text-sm text-gray-900 dark:text-gray-100"
                 >
-                  Платная публикация (выше в поиске)
+                  Выделение вакансии в поиске (платно)
                 </label>
               </div>
               
@@ -364,13 +371,30 @@ const CreateJob = () => {
                   htmlFor="isFeatured"
                   className="ml-2 block text-sm text-gray-900 dark:text-gray-100"
                 >
-                  Рекомендуемая вакансия (появится в блоке рекомендуемых)
+                  Добавить в рекомендуемые вакансии (платно)
                 </label>
+              </div>
+              
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <Label htmlFor="status">Статус публикации</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) => handleSelectChange(value as 'draft' | 'review' | 'published', 'status')}
+                >
+                  <SelectTrigger id="status">
+                    <SelectValue placeholder="Выберите статус" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Сохранить как черновик</SelectItem>
+                    <SelectItem value="review">Отправить на проверку</SelectItem>
+                    <SelectItem value="published">Опубликовать сразу</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               
               <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
                 <p className="text-sm text-gray-700 dark:text-gray-300">
-                  <strong>Обратите внимание:</strong> Платные публикации и рекомендуемые вакансии тарифицируются отдельно.
+                  <strong>Обратите внимание:</strong> Выделение вакансии и добавление в рекомендуемые тарифицируются отдельно.
                   {/* TODO: Добавить информацию о стоимости публикации */}
                 </p>
               </div>
@@ -391,7 +415,11 @@ const CreateJob = () => {
               disabled={isSubmitting}
               className="flex-1"
             >
-              {isSubmitting ? 'Публикация...' : 'Опубликовать вакансию'}
+              {isSubmitting ? 'Публикация...' : formData.status === 'published' 
+                ? 'Опубликовать вакансию' 
+                : formData.status === 'review' 
+                  ? 'Отправить на проверку' 
+                  : 'Сохранить черновик'}
             </Button>
           </div>
         </form>

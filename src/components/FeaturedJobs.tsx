@@ -29,10 +29,10 @@ export const FeaturedJobs = () => {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Популярные вакансии
+              Рекомендуемые вакансии
             </h2>
             <p className="mt-2 text-gray-600 dark:text-gray-400">
-              Выбор самых популярных вакансий от ведущих компаний
+              Выбор лучших вакансий от ведущих компаний
             </p>
           </div>
           

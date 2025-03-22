@@ -1,17 +1,26 @@
 
 import { useState, useEffect } from 'react';
-import { PlusCircle, CircleEllipsis, Eye, User, Mail, Search, Pencil, ExternalLink } from 'lucide-react';
+import { PlusCircle, CircleEllipsis, Eye, User, Mail, Search, Pencil, ExternalLink, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { getRecentJobs, JobListing } from '@/data/jobs';
 import { useUser } from '@/contexts/UserContext';
 import { Input } from '@/components/ui/input';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from '@/hooks/use-toast';
 
 // Extended job type for recruiter view
 interface RecruiterJobStats extends JobListing {
   views: number;
   contactsViewed: number;
   applicants: number;
+  status: 'draft' | 'review' | 'published' | 'archived';
 }
 
 const MyJobs = () => {
@@ -19,8 +28,10 @@ const MyJobs = () => {
   const [filteredJobs, setFilteredJobs] = useState<RecruiterJobStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const navigate = useNavigate();
   const { role } = useUser();
+  const { toast } = useToast();
   
   useEffect(() => {
     // Redirect if not a recruiter
@@ -33,11 +44,12 @@ const MyJobs = () => {
     setLoading(true);
     setTimeout(() => {
       // Временное решение: добавляем статистику к существующим вакансиям
-      const userJobs = getRecentJobs().map(job => ({
+      const userJobs = getRecentJobs().map((job, index) => ({
         ...job,
         views: Math.floor(Math.random() * 100) + 10,
         contactsViewed: Math.floor(Math.random() * 20) + 1,
-        applicants: Math.floor(Math.random() * 15)
+        applicants: Math.floor(Math.random() * 15),
+        status: ['draft', 'review', 'published', 'archived', 'published'][index % 5] as 'draft' | 'review' | 'published' | 'archived'
       }));
       setJobs(userJobs);
       setFilteredJobs(userJobs);
@@ -46,18 +58,70 @@ const MyJobs = () => {
   }, [navigate, role]);
 
   useEffect(() => {
-    if (searchQuery.trim() === '') {
-      setFilteredJobs(jobs);
-    } else {
+    let filtered = jobs;
+    
+    // Фильтр по статусу
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(job => job.status === statusFilter);
+    }
+    
+    // Фильтр по поисковому запросу
+    if (searchQuery.trim() !== '') {
       const query = searchQuery.toLowerCase();
-      const filtered = jobs.filter(job => 
+      filtered = filtered.filter(job => 
         job.title.toLowerCase().includes(query) || 
         job.company.toLowerCase().includes(query) ||
         job.location.toLowerCase().includes(query)
       );
-      setFilteredJobs(filtered);
     }
-  }, [searchQuery, jobs]);
+    
+    setFilteredJobs(filtered);
+  }, [searchQuery, statusFilter, jobs]);
+
+  const getStatusLabel = (status: string) => {
+    switch(status) {
+      case 'draft': return 'Черновик';
+      case 'review': return 'На проверке';
+      case 'published': return 'Опубликована';
+      case 'archived': return 'Архивирована';
+      default: return 'Неизвестно';
+    }
+  };
+  
+  const getStatusColor = (status: string) => {
+    switch(status) {
+      case 'draft': return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300';
+      case 'review': return 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-300';
+      case 'published': return 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-300';
+      case 'archived': return 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-300';
+      default: return 'bg-gray-100 text-gray-600';
+    }
+  };
+  
+  const getStatusIcon = (status: string) => {
+    switch(status) {
+      case 'draft': return <Clock className="h-3 w-3 mr-1" />;
+      case 'review': return <AlertCircle className="h-3 w-3 mr-1" />;
+      case 'published': return <CheckCircle className="h-3 w-3 mr-1" />;
+      case 'archived': return <AlertCircle className="h-3 w-3 mr-1" />;
+      default: return null;
+    }
+  };
+  
+  const updateJobStatus = (jobId: string, newStatus: 'draft' | 'review' | 'published' | 'archived') => {
+    // TODO: Заменить на отправку на API
+    setJobs(prevJobs => 
+      prevJobs.map(job => 
+        job.id === jobId ? { ...job, status: newStatus } : job
+      )
+    );
+    
+    toast({
+      title: "Статус обновлен",
+      description: `Вакансия ${getStatusLabel(newStatus).toLowerCase()}`,
+      duration: 5000, // Автозакрытие через 5 секунд
+    });
+  };
 
   if (loading) {
     return (
@@ -84,16 +148,36 @@ const MyJobs = () => {
         </div>
       </section>
 
-      {/* Поиск */}
+      {/* Фильтр и поиск */}
       <section className="py-2 mb-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            placeholder="Поиск по вакансиям"
-            className="pl-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Поиск по вакансиям"
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          
+          <div className="w-full sm:w-60">
+            <Select
+              value={statusFilter}
+              onValueChange={setStatusFilter}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Все статусы" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все статусы</SelectItem>
+                <SelectItem value="draft">Черновики</SelectItem>
+                <SelectItem value="review">На проверке</SelectItem>
+                <SelectItem value="published">Опубликованные</SelectItem>
+                <SelectItem value="archived">Архивированные</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </section>
 
@@ -122,9 +206,16 @@ const MyJobs = () => {
                   </div>
                   
                   <div className="flex-1">
-                    <h3 className="text-md font-medium text-gray-900 dark:text-white truncate">
-                      {job.title}
-                    </h3>
+                    <div className="flex justify-between items-start">
+                      <h3 className="text-md font-medium text-gray-900 dark:text-white truncate mr-2">
+                        {job.title}
+                      </h3>
+                      <div className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${getStatusColor(job.status)}`}>
+                        {getStatusIcon(job.status)}
+                        {getStatusLabel(job.status)}
+                      </div>
+                    </div>
+                    
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       {job.location} • {job.type}
                     </p>
@@ -135,7 +226,7 @@ const MyJobs = () => {
                     <div className="mt-3 grid grid-cols-3 gap-2">
                       <div className="flex flex-col items-center py-2 px-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         <div className="flex items-center gap-1">
-                          <Eye className="h-4 w-4 text-gray-500" />
+                          <Eye className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                           <span className="font-medium text-gray-900 dark:text-white">{job.views}</span>
                         </div>
                         <span className="text-xs text-gray-500 dark:text-gray-400">Просмотры</span>
@@ -143,7 +234,7 @@ const MyJobs = () => {
                       
                       <div className="flex flex-col items-center py-2 px-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         <div className="flex items-center gap-1">
-                          <Mail className="h-4 w-4 text-gray-500" />
+                          <Mail className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                           <span className="font-medium text-gray-900 dark:text-white">{job.contactsViewed}</span>
                         </div>
                         <span className="text-xs text-gray-500 dark:text-gray-400">Контакты</span>
@@ -151,34 +242,65 @@ const MyJobs = () => {
                       
                       <div className="flex flex-col items-center py-2 px-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         <div className="flex items-center gap-1">
-                          <User className="h-4 w-4 text-gray-500" />
+                          <User className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                           <span className="font-medium text-gray-900 dark:text-white">{job.applicants}</span>
                         </div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">Просмотры</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">Заявки</span>
                       </div>
                     </div>
                   </div>
                 </div>
                 
-                <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 flex justify-between">
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => navigate(`/job/${job.id}`)}
-                    className="flex items-center"
-                  >
-                    <ExternalLink className="h-4 w-4 mr-1" />
-                    Просмотреть
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => navigate(`/edit-job/${job.id}`)}
-                    className="flex items-center"
-                  >
-                    <Pencil className="h-4 w-4 mr-1" />
-                    Редактировать
-                  </Button>
+                <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                  <div className="flex justify-between">
+                    <div>
+                      {job.status !== 'published' && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => updateJobStatus(job.id, 'published')}
+                          className="mr-2"
+                        >
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          Опубликовать
+                        </Button>
+                      )}
+                      
+                      {job.status === 'published' && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => updateJobStatus(job.id, 'archived')}
+                          className="mr-2"
+                        >
+                          <AlertCircle className="h-4 w-4 mr-1" />
+                          Снять с публикации
+                        </Button>
+                      )}
+                    </div>
+                    
+                    <div>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => navigate(`/job/${job.id}`)}
+                        className="flex items-center mr-2"
+                      >
+                        <ExternalLink className="h-4 w-4 mr-1" />
+                        Просмотр
+                      </Button>
+                      
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => navigate(`/edit-job/${job.id}`)}
+                        className="flex items-center"
+                      >
+                        <Pencil className="h-4 w-4 mr-1" />
+                        Редактировать
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -189,7 +311,9 @@ const MyJobs = () => {
               <PlusCircle className="h-8 w-8 text-primary" />
             </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-              У вас пока нет вакансий
+              {statusFilter !== 'all' 
+                ? `У вас нет вакансий со статусом "${getStatusLabel(statusFilter)}"` 
+                : 'У вас пока нет вакансий'}
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               Создайте вашу первую вакансию, чтобы начать поиск кандидатов

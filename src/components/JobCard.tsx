@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { Clock, MapPin, Briefcase } from 'lucide-react';
+import { Clock, MapPin, Briefcase, Sparkles } from 'lucide-react';
 import { JobListing } from '@/data/jobs';
 import { cn } from '@/lib/utils';
 
@@ -8,7 +8,7 @@ interface JobCardProps {
   job: JobListing;
   featured?: boolean;
   className?: string;
-  compact?: boolean; // Add the compact prop to the interface
+  compact?: boolean;
 }
 
 export const JobCard = ({ job, featured = false, className, compact = false }: JobCardProps) => {
@@ -37,7 +37,8 @@ export const JobCard = ({ job, featured = false, className, compact = false }: J
           'relative overflow-hidden rounded-xl p-4 transition-all duration-300',
           'bg-white border border-gray-100 hover:shadow-md',
           'dark:bg-gray-800 dark:border-gray-700',
-          featured && 'ring-2 ring-primary/10',
+          job.featured && 'ring-2 ring-primary/20',
+          job.featured && 'bg-primary/5 dark:bg-primary/10',
         )}>
           <div className="flex items-center gap-3">
             <div className="flex-shrink-0">
@@ -57,9 +58,14 @@ export const JobCard = ({ job, featured = false, className, compact = false }: J
             </div>
             
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors duration-200">
-                {job.title}
-              </h3>
+              <div className="flex items-center">
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors duration-200">
+                  {job.title}
+                </h3>
+                {job.featured && (
+                  <Sparkles className="ml-1 h-3 w-3 text-primary" />
+                )}
+              </div>
               
               <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
                 <span className="truncate">{job.company}</span>
@@ -86,12 +92,14 @@ export const JobCard = ({ job, featured = false, className, compact = false }: J
         'relative overflow-hidden rounded-xl p-5 transition-all duration-300',
         'bg-white border border-gray-100 hover:shadow-md',
         'dark:bg-gray-800 dark:border-gray-700',
-        featured && 'ring-2 ring-primary/10',
+        job.featured && 'ring-2 ring-primary/20',
+        job.featured && 'bg-primary/5 dark:bg-primary/10',
       )}>
-        {featured && (
+        {job.featured && (
           <div className="absolute top-3 right-3">
             <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-              Featured
+              <Sparkles className="mr-1 h-3 w-3" />
+              Рекомендуемая
             </span>
           </div>
         )}

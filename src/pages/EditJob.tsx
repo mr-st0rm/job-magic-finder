@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { getJobById } from '@/data/jobs';
 import { CircleEllipsis } from 'lucide-react';
 import { 
@@ -33,6 +33,8 @@ const EditJob = () => {
     contact_telegram: '',
     isPremium: false,
     isFeatured: false,
+    status: 'published' as 'draft' | 'review' | 'published' | 'archived',
+    featured: false,
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -63,12 +65,15 @@ const EditJob = () => {
             contact_telegram: `@hr_${job.company.toLowerCase().replace(/\s+/g, '')}`,
             isPremium: job.id === '1' || job.id === '3', // Условно для демонстрации
             isFeatured: job.id === '1' || job.id === '2', // Условно для демонстрации
+            status: ['draft', 'review', 'published', 'archived'][Math.floor(Math.random() * 4)] as 'draft' | 'review' | 'published' | 'archived',
+            featured: job.featured || false,
           });
         } else {
           toast({
             title: 'Ошибка',
             description: 'Вакансия не найдена',
-            variant: 'destructive'
+            variant: 'destructive',
+            duration: 5000,
           });
           navigate('/my-jobs');
         }
@@ -153,15 +158,14 @@ const EditJob = () => {
     setIsSubmitting(true);
     
     // TODO: Отправить данные на сервер
-    // TODO: Реализовать платную публикацию вакансий
-    // TODO: Реализовать обработку рекомендуемых/выделенных вакансий
+    // TODO: Реализовать платную публикацию вакансий (выделение в поиске)
+    // TODO: Реализовать обработку рекомендуемых вакансий
     setTimeout(() => {
       setIsSubmitting(false);
       toast({
         title: 'Вакансия обновлена',
-        description: formData.isPremium 
-          ? 'Изменения успешно сохранены. Вакансия имеет премиум-статус.' 
-          : 'Изменения успешно сохранены'
+        description: `Изменения успешно сохранены. ${formData.isPremium ? 'Вакансия выделена в результатах поиска.' : ''}${formData.isFeatured ? ' Вакансия добавлена в рекомендуемые.' : ''}`,
+        duration: 5000, // Автозакрытие через 5 секунд
       });
       navigate('/my-jobs');
     }, 1000);
@@ -293,7 +297,7 @@ const EditJob = () => {
                   className={errors.requirements ? 'border-destructive' : ''}
                   autoResize={true}
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Каждое требование с новой строки
                 </p>
                 {errors.requirements && <p className="text-xs text-destructive mt-1">{errors.requirements}</p>}
@@ -310,7 +314,7 @@ const EditJob = () => {
                   className={errors.responsibilities ? 'border-destructive' : ''}
                   autoResize={true}
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   Каждая обязанность с новой строки
                 </p>
                 {errors.responsibilities && <p className="text-xs text-destructive mt-1">{errors.responsibilities}</p>}
@@ -374,7 +378,7 @@ const EditJob = () => {
                   {errors.contact_telegram && <p className="text-xs text-destructive mt-1">{errors.contact_telegram}</p>}
                 </div>
               </div>
-              <p className="text-xs text-gray-500">* Укажите хотя бы один способ связи (телефон, email или Telegram)</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">* Укажите хотя бы один способ связи (телефон, email или Telegram)</p>
             </div>
           </div>
           
@@ -396,7 +400,7 @@ const EditJob = () => {
                   htmlFor="isPremium"
                   className="ml-2 block text-sm text-gray-900 dark:text-gray-100"
                 >
-                  Платная публикация (выше в поиске)
+                  Выделение вакансии в поиске (платно)
                 </label>
               </div>
               
@@ -412,13 +416,31 @@ const EditJob = () => {
                   htmlFor="isFeatured"
                   className="ml-2 block text-sm text-gray-900 dark:text-gray-100"
                 >
-                  Рекомендуемая вакансия (появится в блоке рекомендуемых)
+                  Добавить в рекомендуемые вакансии (платно)
                 </label>
+              </div>
+              
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <Label htmlFor="status">Статус публикации</Label>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value) => handleSelectChange(value as 'draft' | 'review' | 'published' | 'archived', 'status')}
+                >
+                  <SelectTrigger id="status">
+                    <SelectValue placeholder="Выберите статус" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Черновик</SelectItem>
+                    <SelectItem value="review">На проверке</SelectItem>
+                    <SelectItem value="published">Опубликована</SelectItem>
+                    <SelectItem value="archived">Архивирована</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               
               <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
                 <p className="text-sm text-gray-700 dark:text-gray-300">
-                  <strong>Обратите внимание:</strong> Платные публикации и рекомендуемые вакансии тарифицируются отдельно.
+                  <strong>Обратите внимание:</strong> Выделение вакансии и добавление в рекомендуемые тарифицируются отдельно.
                   {/* TODO: Добавить информацию о стоимости публикации */}
                 </p>
               </div>
