@@ -7,13 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from '@/components/ui/drawer';
 import { JobCardCompact } from '@/components/JobCardCompact';
 import { searchJobs, JobListing, jobCategories, jobTypes, locations, salaryRanges } from '@/data/jobs';
+import SearchForm from '@/components/SearchForm';
 
 const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [jobs, setJobs] = useState<JobListing[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
-  const [location, setLocation] = useState(searchParams.get('location') || '');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const initialFilters = {
@@ -43,11 +42,9 @@ const Search = () => {
     }, 500);
   }, [searchParams]);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleSearch = (query: string, location: string) => {
     const params = new URLSearchParams();
-    if (searchQuery) params.set('q', searchQuery);
+    if (query) params.set('q', query);
     if (location) params.set('location', location);
     
     // Добавляем фильтры к параметрам
@@ -94,116 +91,100 @@ const Search = () => {
     <div className="container-custom px-4">
       {/* Поисковая форма */}
       <section className="pt-6 pb-4">
-        <form onSubmit={handleSearch} className="space-y-3">
-          <div className="flex items-center gap-2">
-            <div className="relative flex-1">
-              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <Input
-                type="text"
-                placeholder="Должность или навык"
-                className="pl-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            
-            <Drawer open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-              <DrawerTrigger asChild>
-                <Button variant="outline" size="icon" className="relative">
-                  <Filter className="h-5 w-5" />
-                  {hasActiveFilters && (
-                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full" />
-                  )}
-                </Button>
-              </DrawerTrigger>
-              <DrawerContent>
-                <DrawerHeader>
-                  <DrawerTitle>Фильтры</DrawerTitle>
-                </DrawerHeader>
-                <div className="p-4 space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Категория</label>
-                    <select 
-                      className="w-full p-2 border rounded-md bg-transparent"
-                      value={filters.category}
-                      onChange={(e) => handleFilterChange('category', e.target.value)}
-                    >
-                      <option value="">Все категории</option>
-                      {jobCategories.slice(1).map(category => (
-                        <option key={category} value={category}>{category}</option>
-                      ))}
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Тип занятости</label>
-                    <select 
-                      className="w-full p-2 border rounded-md bg-transparent"
-                      value={filters.type}
-                      onChange={(e) => handleFilterChange('type', e.target.value)}
-                    >
-                      <option value="">Все типы</option>
-                      {jobTypes.slice(1).map(type => (
-                        <option key={type} value={type}>{type}</option>
-                      ))}
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Местоположение</label>
-                    <select 
-                      className="w-full p-2 border rounded-md bg-transparent"
-                      value={filters.location}
-                      onChange={(e) => handleFilterChange('location', e.target.value)}
-                    >
-                      <option value="">Все локации</option>
-                      {locations.slice(1).map(loc => (
-                        <option key={loc} value={loc}>{loc}</option>
-                      ))}
-                    </select>
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Зарплата</label>
-                    <select 
-                      className="w-full p-2 border rounded-md bg-transparent"
-                      value={filters.salary}
-                      onChange={(e) => handleFilterChange('salary', e.target.value)}
-                    >
-                      <option value="">Любая зарплата</option>
-                      {salaryRanges.slice(1).map(range => (
-                        <option key={range} value={range}>{range}</option>
-                      ))}
-                    </select>
-                  </div>
+        <SearchForm 
+          className="w-full" 
+          defaultValues={{
+            query: searchParams.get('q') || '',
+            location: searchParams.get('location') || ''
+          }}
+          onSearch={handleSearch}
+        />
+        
+        <div className="mt-3 flex items-center">
+          <Drawer open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+            <DrawerTrigger asChild>
+              <Button variant="outline" size="sm" className="relative flex items-center">
+                <Filter className="h-4 w-4 mr-2" />
+                Фильтры
+                {hasActiveFilters && (
+                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full" />
+                )}
+              </Button>
+            </DrawerTrigger>
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle>Фильтры</DrawerTitle>
+              </DrawerHeader>
+              <div className="p-4 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Категория</label>
+                  <select 
+                    className="w-full p-2 border rounded-md bg-transparent"
+                    value={filters.category}
+                    onChange={(e) => handleFilterChange('category', e.target.value)}
+                  >
+                    <option value="">Все категории</option>
+                    {jobCategories.slice(1).map(category => (
+                      <option key={category} value={category}>{category}</option>
+                    ))}
+                  </select>
                 </div>
-                <DrawerFooter>
-                  <div className="flex gap-2">
-                    <Button variant="outline" onClick={resetFilters} className="flex-1">
-                      Сбросить
-                    </Button>
-                    <Button onClick={applyFilters} className="flex-1">
-                      Применить
-                    </Button>
-                  </div>
-                </DrawerFooter>
-              </DrawerContent>
-            </Drawer>
-          </div>
-          
-          <div className="relative">
-            <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Город или удаленно"
-              className="pl-10"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-            />
-          </div>
-          
-          <Button type="submit" className="w-full">Найти</Button>
-        </form>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1">Тип занятости</label>
+                  <select 
+                    className="w-full p-2 border rounded-md bg-transparent"
+                    value={filters.type}
+                    onChange={(e) => handleFilterChange('type', e.target.value)}
+                  >
+                    <option value="">Все типы</option>
+                    {jobTypes.slice(1).map(type => (
+                      <option key={type} value={type}>{type}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1">Местоположение</label>
+                  <select 
+                    className="w-full p-2 border rounded-md bg-transparent"
+                    value={filters.location}
+                    onChange={(e) => handleFilterChange('location', e.target.value)}
+                  >
+                    <option value="">Все локации</option>
+                    {locations.slice(1).map(loc => (
+                      <option key={loc} value={loc}>{loc}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1">Зарплата</label>
+                  <select 
+                    className="w-full p-2 border rounded-md bg-transparent"
+                    value={filters.salary}
+                    onChange={(e) => handleFilterChange('salary', e.target.value)}
+                  >
+                    <option value="">Любая зарплата</option>
+                    {salaryRanges.slice(1).map(range => (
+                      <option key={range} value={range}>{range}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <DrawerFooter>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={resetFilters} className="flex-1">
+                    Сбросить
+                  </Button>
+                  <Button onClick={applyFilters} className="flex-1">
+                    Применить
+                  </Button>
+                </div>
+              </DrawerFooter>
+            </DrawerContent>
+          </Drawer>
+        </div>
       </section>
 
       {/* Активные фильтры */}
@@ -274,8 +255,6 @@ const Search = () => {
             <Button
               onClick={() => {
                 setSearchParams({});
-                setSearchQuery('');
-                setLocation('');
                 resetFilters();
               }}
               variant="outline"

@@ -1,10 +1,11 @@
 
 import { useState, useEffect } from 'react';
-import { PlusCircle, CircleEllipsis, Eye, User, Mail } from 'lucide-react';
+import { PlusCircle, CircleEllipsis, Eye, User, Mail, Search, Pencil, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { getRecentJobs, JobListing } from '@/data/jobs';
 import { useUser } from '@/contexts/UserContext';
+import { Input } from '@/components/ui/input';
 
 // Extended job type for recruiter view
 interface RecruiterJobStats extends JobListing {
@@ -15,7 +16,9 @@ interface RecruiterJobStats extends JobListing {
 
 const MyJobs = () => {
   const [jobs, setJobs] = useState<RecruiterJobStats[]>([]);
+  const [filteredJobs, setFilteredJobs] = useState<RecruiterJobStats[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const { role } = useUser();
   
@@ -37,9 +40,24 @@ const MyJobs = () => {
         applicants: Math.floor(Math.random() * 15)
       }));
       setJobs(userJobs);
+      setFilteredJobs(userJobs);
       setLoading(false);
     }, 500);
   }, [navigate, role]);
+
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setFilteredJobs(jobs);
+    } else {
+      const query = searchQuery.toLowerCase();
+      const filtered = jobs.filter(job => 
+        job.title.toLowerCase().includes(query) || 
+        job.company.toLowerCase().includes(query) ||
+        job.location.toLowerCase().includes(query)
+      );
+      setFilteredJobs(filtered);
+    }
+  }, [searchQuery, jobs]);
 
   if (loading) {
     return (
@@ -66,14 +84,27 @@ const MyJobs = () => {
         </div>
       </section>
 
+      {/* Поиск */}
+      <section className="py-2 mb-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Input
+            placeholder="Поиск по вакансиям"
+            className="pl-10"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+      </section>
+
       {/* Список вакансий */}
       <section className="py-2">
-        {jobs.length > 0 ? (
-          <div className="space-y-4">
-            {jobs.map((job) => (
+        {filteredJobs.length > 0 ? (
+          <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
+            {filteredJobs.map((job) => (
               <div 
                 key={job.id} 
-                className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm"
+                className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm transition-transform hover:translate-y-[-2px]"
               >
                 <div className="flex items-start">
                   <div className="w-12 h-12 rounded-md bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden mr-3">
@@ -91,9 +122,12 @@ const MyJobs = () => {
                   </div>
                   
                   <div className="flex-1">
-                    <h3 className="text-md font-medium text-gray-900 dark:text-white">
+                    <h3 className="text-md font-medium text-gray-900 dark:text-white truncate">
                       {job.title}
                     </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {job.location} • {job.type}
+                    </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       Опубликовано {job.postedAt}
                     </p>
@@ -120,7 +154,7 @@ const MyJobs = () => {
                           <User className="h-4 w-4 text-gray-500" />
                           <span className="font-medium text-gray-900 dark:text-white">{job.applicants}</span>
                         </div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">Отклики</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400">Просмотры</span>
                       </div>
                     </div>
                   </div>
@@ -131,14 +165,18 @@ const MyJobs = () => {
                     variant="ghost" 
                     size="sm"
                     onClick={() => navigate(`/job/${job.id}`)}
+                    className="flex items-center"
                   >
+                    <ExternalLink className="h-4 w-4 mr-1" />
                     Просмотреть
                   </Button>
                   <Button 
                     variant="ghost" 
                     size="sm"
                     onClick={() => navigate(`/edit-job/${job.id}`)}
+                    className="flex items-center"
                   >
+                    <Pencil className="h-4 w-4 mr-1" />
                     Редактировать
                   </Button>
                 </div>

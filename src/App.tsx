@@ -16,6 +16,8 @@ import Settings from "./pages/Settings";
 import EditProfile from "./pages/EditProfile";
 import Notifications from "./pages/Notifications";
 import Help from "./pages/Help";
+import Search from "./pages/Search";
+import EditJob from "./pages/EditJob";
 
 const queryClient = new QueryClient();
 
@@ -27,16 +29,17 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Layout><Home /></Layout>} />
-            <Route path="/job/:id" element={<Layout><JobDetail /></Layout>} />
-            <Route path="/profile" element={<Layout><Profile /></Layout>} />
-            <Route path="/my-jobs" element={<Layout><MyJobs /></Layout>} />
-            <Route path="/create-job" element={<Layout><CreateJob /></Layout>} />
-            <Route path="/edit-profile" element={<Layout><EditProfile /></Layout>} />
-            <Route path="/settings" element={<Layout><Settings /></Layout>} />
-            <Route path="/notifications" element={<Layout><Notifications /></Layout>} />
-            <Route path="/help" element={<Layout><Help /></Layout>} />
-            <Route path="/search" element={<Layout><Home /></Layout>} />
+            <Route path="/" element={<Layout>{<Home />}</Layout>} />
+            <Route path="/job/:id" element={<Layout>{<JobDetail />}</Layout>} />
+            <Route path="/profile" element={<Layout>{<Profile />}</Layout>} />
+            <Route path="/my-jobs" element={<Layout>{<MyJobs />}</Layout>} />
+            <Route path="/create-job" element={<Layout>{<CreateJob />}</Layout>} />
+            <Route path="/edit-job/:id" element={<Layout>{<EditJob />}</Layout>} />
+            <Route path="/edit-profile" element={<Layout>{<EditProfile />}</Layout>} />
+            <Route path="/settings" element={<Layout>{<Settings />}</Layout>} />
+            <Route path="/notifications" element={<Layout>{<Notifications />}</Layout>} />
+            <Route path="/help" element={<Layout>{<Help />}</Layout>} />
+            <Route path="/search" element={<Layout>{<Search />}</Layout>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

@@ -1,7 +1,7 @@
 
-import { ReactNode, useState } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Moon, Sun, Home, Search, User, BriefcaseBusiness } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Home, Search, User, BriefcaseBusiness, Plus } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import { Button } from '@/components/ui/button';
 
@@ -15,16 +15,37 @@ const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
   const { role } = useUser();
 
+  // Load theme preference on initial render
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('darkMode');
+    if (savedTheme) {
+      const isDark = savedTheme === 'true';
+      setDarkMode(isDark);
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    }
+  }, []);
+
   const toggleTheme = () => {
-    setDarkMode(!darkMode);
-    document.documentElement.classList.toggle('dark');
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    localStorage.setItem('darkMode', String(newDarkMode));
+    
+    if (newDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   };
 
   // Проверка, находимся ли мы на главной странице
   const isHome = location.pathname === '/';
 
   return (
-    <div className={`min-h-screen ${darkMode ? 'dark' : ''} bg-gray-50 dark:bg-gray-900`}>
+    <div className={`min-h-screen bg-gray-50 dark:bg-gray-900`}>
       {/* Шапка */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="container-custom flex items-center justify-between h-14 px-4">
@@ -68,7 +89,7 @@ const Layout = ({ children }: LayoutProps) => {
           >
             <Home className={`h-5 w-5 ${location.pathname === '/' ? 'text-primary' : ''}`} />
             <span className={`text-xs mt-1 ${location.pathname === '/' ? 'text-primary' : ''}`}>
-              Вакансии
+              {role === 'recruiter' ? 'Мои вакансии' : 'Вакансии'}
             </span>
           </Button>
 
@@ -76,11 +97,11 @@ const Layout = ({ children }: LayoutProps) => {
             <Button
               variant="ghost"
               className="flex flex-col items-center justify-center rounded-none h-full"
-              onClick={() => navigate('/my-jobs')}
+              onClick={() => navigate('/create-job')}
             >
-              <BriefcaseBusiness className={`h-5 w-5 ${location.pathname === '/my-jobs' ? 'text-primary' : ''}`} />
-              <span className={`text-xs mt-1 ${location.pathname === '/my-jobs' ? 'text-primary' : ''}`}>
-                Мои вакансии
+              <Plus className={`h-5 w-5 ${location.pathname === '/create-job' ? 'text-primary' : ''}`} />
+              <span className={`text-xs mt-1 ${location.pathname === '/create-job' ? 'text-primary' : ''}`}>
+                Создать
               </span>
             </Button>
           ) : (

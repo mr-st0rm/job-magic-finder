@@ -1,13 +1,16 @@
 
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
+import { getJobById } from '@/data/jobs';
+import { CircleEllipsis } from 'lucide-react';
 
-const CreateJob = () => {
+const EditJob = () => {
+  const { id } = useParams<{ id: string }>();
   const [formData, setFormData] = useState({
     title: '',
     company: '',
@@ -24,9 +27,44 @@ const CreateJob = () => {
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  useEffect(() => {
+    if (id) {
+      // TODO: Заменить на получение данных из API
+      setIsLoading(true);
+      setTimeout(() => {
+        const job = getJobById(id);
+        if (job) {
+          setFormData({
+            title: job.title,
+            company: job.company,
+            location: job.location,
+            type: job.type,
+            salary: job.salary,
+            description: job.description,
+            requirements: job.requirements.join('\n'),
+            responsibilities: job.responsibilities.join('\n'),
+            contact_name: 'HR Manager', // Placeholder data
+            contact_phone: '+7 (999) 123-45-67',
+            contact_email: `hr@${job.company.toLowerCase().replace(/\s+/g, '')}.com`,
+            contact_telegram: `@hr_${job.company.toLowerCase().replace(/\s+/g, '')}`,
+          });
+        } else {
+          toast({
+            title: 'Ошибка',
+            description: 'Вакансия не найдена',
+            variant: 'destructive'
+          });
+          navigate('/my-jobs');
+        }
+        setIsLoading(false);
+      }, 500);
+    }
+  }, [id, navigate, toast]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { id, value } = e.target;
@@ -91,18 +129,26 @@ const CreateJob = () => {
     setTimeout(() => {
       setIsSubmitting(false);
       toast({
-        title: 'Вакансия создана',
-        description: 'Ваша вакансия успешно опубликована'
+        title: 'Вакансия обновлена',
+        description: 'Изменения успешно сохранены'
       });
       navigate('/my-jobs');
     }, 1000);
   };
   
+  if (isLoading) {
+    return (
+      <div className="container-custom px-4 py-8 flex justify-center">
+        <CircleEllipsis className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+  
   return (
     <div className="container-custom px-4">
       <section className="pt-6 pb-4">
         <h1 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          Создать вакансию
+          Редактировать вакансию
         </h1>
         
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -310,7 +356,7 @@ const CreateJob = () => {
               disabled={isSubmitting}
               className="flex-1"
             >
-              {isSubmitting ? 'Публикация...' : 'Опубликовать вакансию'}
+              {isSubmitting ? 'Сохранение...' : 'Сохранить изменения'}
             </Button>
           </div>
         </form>
@@ -319,4 +365,4 @@ const CreateJob = () => {
   );
 };
 
-export default CreateJob;
+export default EditJob;

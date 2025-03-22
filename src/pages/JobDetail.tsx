@@ -12,7 +12,8 @@ import {
   Phone,
   Mail,
   CheckCircle,
-  CircleEllipsis
+  CircleEllipsis,
+  MessageSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getJobById, JobListing } from '@/data/jobs';
@@ -146,24 +147,47 @@ const JobDetail = () => {
 
       {/* Действия с вакансией */}
       <section className="py-2">
-        <div className="grid grid-cols-2 gap-3">
-          <Button 
-            onClick={toggleFavorite} 
-            variant={isFavorite ? "default" : "outline"}
-            className="flex items-center"
-          >
-            <Heart className={`h-4 w-4 mr-2 ${isFavorite ? 'fill-current' : ''}`} />
-            {isFavorite ? 'В избранном' : 'В избранное'}
-          </Button>
-          <Button 
-            onClick={handleShare} 
-            variant="outline"
-            className="flex items-center"
-          >
-            <Share2 className="h-4 w-4 mr-2" />
-            Поделиться
-          </Button>
-        </div>
+        {role !== 'recruiter' ? (
+          <div className="grid grid-cols-2 gap-3">
+            <Button 
+              onClick={toggleFavorite} 
+              variant={isFavorite ? "default" : "outline"}
+              className="flex items-center"
+            >
+              <Heart className={`h-4 w-4 mr-2 ${isFavorite ? 'fill-current' : ''}`} />
+              {isFavorite ? 'В избранном' : 'В избранное'}
+            </Button>
+            <Button 
+              onClick={handleShare} 
+              variant="outline"
+              className="flex items-center"
+            >
+              <Share2 className="h-4 w-4 mr-2" />
+              Поделиться
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {job.id && (
+              <Button 
+                onClick={() => navigate(`/edit-job/${job.id}`)} 
+                variant="default"
+                className="flex items-center"
+              >
+                <Briefcase className="h-4 w-4 mr-2" />
+                Редактировать
+              </Button>
+            )}
+            <Button 
+              onClick={handleShare} 
+              variant="outline"
+              className="flex items-center"
+            >
+              <Share2 className="h-4 w-4 mr-2" />
+              Поделиться
+            </Button>
+          </div>
+        )}
       </section>
 
       {/* Описание вакансии */}
@@ -234,38 +258,48 @@ const JobDetail = () => {
       </section>
 
       {/* Контакты для связи */}
-      <section className="py-2 mb-6">
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Контакты</h2>
-          
-          {contactsVisible ? (
-            <div className="space-y-3">
-              <div className="flex items-center">
-                <Phone className="h-5 w-5 text-gray-500 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Телефон</p>
-                  <p className="text-gray-900 dark:text-white">+7 (999) 123-45-67</p>
+      {role !== 'recruiter' && (
+        <section className="py-2 mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Контакты</h2>
+            
+            {contactsVisible ? (
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <Phone className="h-5 w-5 text-gray-500 mr-3" />
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Телефон</p>
+                    <p className="text-gray-900 dark:text-white">+7 (999) 123-45-67</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center">
+                  <Mail className="h-5 w-5 text-gray-500 mr-3" />
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
+                    <p className="text-gray-900 dark:text-white">hr@{job.company.toLowerCase().replace(/\s+/g, '')}.com</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center">
+                  <MessageSquare className="h-5 w-5 text-gray-500 mr-3" />
+                  <div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Telegram</p>
+                    <p className="text-gray-900 dark:text-white">@hr_{job.company.toLowerCase().replace(/\s+/g, '')}</p>
+                  </div>
                 </div>
               </div>
-              
-              <div className="flex items-center">
-                <Mail className="h-5 w-5 text-gray-500 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Email</p>
-                  <p className="text-gray-900 dark:text-white">hr@{job.company.toLowerCase().replace(/\s+/g, '')}.com</p>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <Button 
-              onClick={showContacts} 
-              className="w-full"
-            >
-              Показать контакты
-            </Button>
-          )}
-        </div>
-      </section>
+            ) : (
+              <Button 
+                onClick={showContacts} 
+                className="w-full"
+              >
+                Показать контакты
+              </Button>
+            )}
+          </div>
+        </section>
+      )}
     </div>
   );
 };

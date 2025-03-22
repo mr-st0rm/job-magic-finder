@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Search, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface SearchFormProps {
   className?: string;
@@ -42,10 +43,10 @@ export const SearchForm = ({ className, defaultValues, onSearch }: SearchFormPro
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search className="h-5 w-5 text-gray-400" />
           </div>
-          <input
+          <Input
             type="text"
             placeholder="Должность, навыки или компания"
-            className="block w-full pl-10 pr-4 py-3 bg-transparent border-0 text-gray-900 placeholder-gray-500 focus:ring-0 focus:outline-none dark:text-white"
+            className="pl-10 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -55,17 +56,17 @@ export const SearchForm = ({ className, defaultValues, onSearch }: SearchFormPro
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <MapPin className="h-5 w-5 text-gray-400" />
           </div>
-          <input
+          <Input
             type="text"
             placeholder="Местоположение"
-            className="block w-full pl-10 pr-4 py-3 bg-transparent border-0 text-gray-900 placeholder-gray-500 focus:ring-0 focus:outline-none dark:text-white"
+            className="pl-10 border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
             value={location}
             onChange={(e) => setLocation(e.target.value)}
           />
         </div>
         
         <div className="w-full sm:w-auto">
-          <Button type="submit" className="w-full px-8 py-3 h-auto bg-primary hover:bg-primary/90">
+          <Button type="submit" className="w-full px-8 py-3 h-auto">
             Поиск
           </Button>
         </div>
