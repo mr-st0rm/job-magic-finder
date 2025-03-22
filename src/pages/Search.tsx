@@ -6,7 +6,7 @@ import { SearchForm } from '@/components/SearchForm';
 import { JobFilter } from '@/components/JobFilter';
 import { JobCard } from '@/components/JobCard';
 import { searchJobs, JobListing } from '@/data/jobs';
-import { Briefcase, Search, Loader2 } from 'lucide-react';
+import { Briefcase, Search as SearchIcon, Loader2 } from 'lucide-react';
 
 const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -119,7 +119,7 @@ const Search = () => {
                   <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                     <div className="relative">
                       <Briefcase className="h-8 w-8 text-primary" />
-                      <Search className="h-4 w-4 text-primary absolute -bottom-1 -right-1" />
+                      <SearchIcon className="h-4 w-4 text-primary absolute -bottom-1 -right-1" />
                     </div>
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
