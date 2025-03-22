@@ -198,6 +198,7 @@ const CreateJob = () => {
                   value={formData.description}
                   onChange={handleChange}
                   className={errors.description ? 'border-destructive' : ''}
+                  autoResize={true}
                 />
                 {errors.description && <p className="text-xs text-destructive mt-1">{errors.description}</p>}
               </div>
@@ -211,6 +212,7 @@ const CreateJob = () => {
                   value={formData.requirements}
                   onChange={handleChange}
                   className={errors.requirements ? 'border-destructive' : ''}
+                  autoResize={true}
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Каждое требование с новой строки
@@ -227,6 +229,7 @@ const CreateJob = () => {
                   value={formData.responsibilities}
                   onChange={handleChange}
                   className={errors.responsibilities ? 'border-destructive' : ''}
+                  autoResize={true}
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   Каждая обязанность с новой строки

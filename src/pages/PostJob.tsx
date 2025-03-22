@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/button';
@@ -230,6 +229,7 @@ const PostJob = () => {
                       value={formData.description}
                       onChange={(e) => updateFormData('description', e.target.value)}
                       required
+                      autoResize={true}
                     />
                   </div>
                   
@@ -241,6 +241,7 @@ const PostJob = () => {
                       rows={4}
                       value={formData.requirements}
                       onChange={(e) => updateFormData('requirements', e.target.value)}
+                      autoResize={true}
                     />
                   </div>
                   
@@ -252,6 +253,7 @@ const PostJob = () => {
                       rows={4}
                       value={formData.responsibilities}
                       onChange={(e) => updateFormData('responsibilities', e.target.value)}
+                      autoResize={true}
                     />
                   </div>
                 </CardContent>
@@ -302,6 +304,7 @@ const PostJob = () => {
                       rows={5}
                       value={formData.companyDescription}
                       onChange={(e) => updateFormData('companyDescription', e.target.value)}
+                      autoResize={true}
                     />
                   </div>
                   
@@ -468,7 +471,6 @@ const PostJob = () => {
         </div>
       </div>
       
-      {/* Footer - simplified for this page */}
       <footer className="bg-white dark:bg-gray-800 py-6 border-t border-gray-200 dark:border-gray-700">
         <div className="container-custom">
           <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
