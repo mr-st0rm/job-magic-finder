@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { PlusCircle, CircleEllipsis, Eye, User, Mail, Search, Pencil, ExternalLink, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { PlusCircle, CircleEllipsis, Eye, Mail, Search, Pencil, ExternalLink, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { getRecentJobs, JobListing } from '@/data/jobs';
@@ -14,12 +14,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 // Extended job type for recruiter view
 interface RecruiterJobStats extends JobListing {
   views: number;
   contactsViewed: number;
-  applicants: number;
   status: 'draft' | 'review' | 'published' | 'archived';
 }
 
@@ -48,7 +48,6 @@ const MyJobs = () => {
         ...job,
         views: Math.floor(Math.random() * 100) + 10,
         contactsViewed: Math.floor(Math.random() * 20) + 1,
-        applicants: Math.floor(Math.random() * 15),
         status: ['draft', 'review', 'published', 'archived', 'published'][index % 5] as 'draft' | 'review' | 'published' | 'archived'
       }));
       setJobs(userJobs);
@@ -119,7 +118,7 @@ const MyJobs = () => {
     toast({
       title: "Статус обновлен",
       description: `Вакансия ${getStatusLabel(newStatus).toLowerCase()}`,
-      duration: 5000, // Автозакрытие через 5 секунд
+      duration: 5000,
     });
   };
 
@@ -184,11 +183,14 @@ const MyJobs = () => {
       {/* Список вакансий */}
       <section className="py-2">
         {filteredJobs.length > 0 ? (
-          <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
+          <div className="grid gap-4 grid-cols-1">
             {filteredJobs.map((job) => (
               <div 
                 key={job.id} 
-                className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm transition-transform hover:translate-y-[-2px]"
+                className={cn(
+                  "bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm transition-transform hover:translate-y-[-2px]",
+                  job.featured && "ring-2 ring-primary/20 bg-primary/5 dark:bg-primary/10"
+                )}
               >
                 <div className="flex items-start">
                   <div className="w-12 h-12 rounded-md bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden mr-3">
@@ -223,7 +225,7 @@ const MyJobs = () => {
                       Опубликовано {job.postedAt}
                     </p>
                     
-                    <div className="mt-3 grid grid-cols-3 gap-2">
+                    <div className="mt-3 grid grid-cols-2 gap-2">
                       <div className="flex flex-col items-center py-2 px-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         <div className="flex items-center gap-1">
                           <Eye className="h-4 w-4 text-gray-500 dark:text-gray-400" />
@@ -239,14 +241,6 @@ const MyJobs = () => {
                         </div>
                         <span className="text-xs text-gray-500 dark:text-gray-400">Контакты</span>
                       </div>
-                      
-                      <div className="flex flex-col items-center py-2 px-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <div className="flex items-center gap-1">
-                          <User className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                          <span className="font-medium text-gray-900 dark:text-white">{job.applicants}</span>
-                        </div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">Заявки</span>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -254,18 +248,6 @@ const MyJobs = () => {
                 <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                   <div className="flex justify-between">
                     <div>
-                      {job.status !== 'published' && (
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => updateJobStatus(job.id, 'published')}
-                          className="mr-2"
-                        >
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          Опубликовать
-                        </Button>
-                      )}
-                      
                       {job.status === 'published' && (
                         <Button 
                           variant="outline" 
@@ -275,6 +257,18 @@ const MyJobs = () => {
                         >
                           <AlertCircle className="h-4 w-4 mr-1" />
                           Снять с публикации
+                        </Button>
+                      )}
+                      
+                      {job.status === 'archived' && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => updateJobStatus(job.id, 'published')}
+                          className="mr-2"
+                        >
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          Опубликовать
                         </Button>
                       )}
                     </div>

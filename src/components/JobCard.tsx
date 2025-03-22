@@ -37,8 +37,8 @@ export const JobCard = ({ job, featured = false, className, compact = false }: J
           'relative overflow-hidden rounded-xl p-4 transition-all duration-300',
           'bg-white border border-gray-100 hover:shadow-md',
           'dark:bg-gray-800 dark:border-gray-700',
-          job.featured && 'ring-2 ring-primary/20',
-          job.featured && 'bg-primary/5 dark:bg-primary/10',
+          (job.featured || featured) && 'ring-2 ring-primary/20',
+          (job.featured || featured) && 'bg-primary/5 dark:bg-primary/10',
         )}>
           <div className="flex items-center gap-3">
             <div className="flex-shrink-0">
@@ -62,7 +62,7 @@ export const JobCard = ({ job, featured = false, className, compact = false }: J
                 <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors duration-200">
                   {job.title}
                 </h3>
-                {job.featured && (
+                {(job.featured || featured) && (
                   <Sparkles className="ml-1 h-3 w-3 text-primary" />
                 )}
               </div>
@@ -92,10 +92,10 @@ export const JobCard = ({ job, featured = false, className, compact = false }: J
         'relative overflow-hidden rounded-xl p-5 transition-all duration-300',
         'bg-white border border-gray-100 hover:shadow-md',
         'dark:bg-gray-800 dark:border-gray-700',
-        job.featured && 'ring-2 ring-primary/20',
-        job.featured && 'bg-primary/5 dark:bg-primary/10',
+        (job.featured || featured) && 'ring-2 ring-primary/20',
+        (job.featured || featured) && 'bg-primary/5 dark:bg-primary/10',
       )}>
-        {job.featured && (
+        {(job.featured || featured) && (
           <div className="absolute top-3 right-3">
             <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
               <Sparkles className="mr-1 h-3 w-3" />

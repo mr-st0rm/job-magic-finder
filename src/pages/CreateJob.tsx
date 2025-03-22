@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -13,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from '@/lib/utils';
 
 const CreateJob = () => {
   const [formData, setFormData] = useState({
@@ -30,7 +30,7 @@ const CreateJob = () => {
     contact_telegram: '',
     isPremium: false, // Выделение вакансии в поиске
     isFeatured: false, // Флаг для рекомендуемых вакансий
-    status: 'draft' as 'draft' | 'review' | 'published',
+    status: 'draft' as 'draft' | 'published',
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -121,14 +121,12 @@ const CreateJob = () => {
       setIsSubmitting(false);
       const statusMessage = formData.status === 'published' 
         ? 'опубликована' 
-        : formData.status === 'review' 
-          ? 'отправлена на проверку' 
-          : 'сохранена как черновик';
+        : 'сохранена как черновик';
           
       toast({
         title: 'Вакансия создана',
         description: `Ваша вакансия успешно ${statusMessage}${formData.isPremium ? ' и будет выделена в результатах поиска' : ''}`,
-        duration: 5000, // Автозакрытие через 5 секунд
+        duration: 5000,
       });
       navigate('/my-jobs');
     }, 1000);
@@ -379,14 +377,13 @@ const CreateJob = () => {
                 <Label htmlFor="status">Статус публикации</Label>
                 <Select
                   value={formData.status}
-                  onValueChange={(value) => handleSelectChange(value as 'draft' | 'review' | 'published', 'status')}
+                  onValueChange={(value) => handleSelectChange(value as 'draft' | 'published', 'status')}
                 >
                   <SelectTrigger id="status">
                     <SelectValue placeholder="Выберите статус" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="draft">Сохранить как черновик</SelectItem>
-                    <SelectItem value="review">Отправить на проверку</SelectItem>
                     <SelectItem value="published">Опубликовать сразу</SelectItem>
                   </SelectContent>
                 </Select>
@@ -417,9 +414,7 @@ const CreateJob = () => {
             >
               {isSubmitting ? 'Публикация...' : formData.status === 'published' 
                 ? 'Опубликовать вакансию' 
-                : formData.status === 'review' 
-                  ? 'Отправить на проверку' 
-                  : 'Сохранить черновик'}
+                : 'Сохранить черновик'}
             </Button>
           </div>
         </form>

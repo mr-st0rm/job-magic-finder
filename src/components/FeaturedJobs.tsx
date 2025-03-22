@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import JobCard from './JobCard';
 import { getFeaturedJobs } from '@/data/jobs';
+import { cn } from '@/lib/utils';
 
 export const FeaturedJobs = () => {
   const [featuredJobs, setFeaturedJobs] = useState(getFeaturedJobs());
@@ -59,7 +60,7 @@ export const FeaturedJobs = () => {
         >
           {featuredJobs.map((job) => (
             <div key={job.id} className="flex-shrink-0 w-full sm:w-[350px]">
-              <JobCard job={job} featured={true} />
+              <JobCard job={{...job, featured: true}} featured={true} />
             </div>
           ))}
         </div>

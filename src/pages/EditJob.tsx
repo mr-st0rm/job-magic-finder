@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -15,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from '@/lib/utils';
 
 const EditJob = () => {
   const { id } = useParams<{ id: string }>();
@@ -33,7 +33,7 @@ const EditJob = () => {
     contact_telegram: '',
     isPremium: false,
     isFeatured: false,
-    status: 'published' as 'draft' | 'review' | 'published' | 'archived',
+    status: 'published' as 'published' | 'archived',
     featured: false,
   });
   
@@ -45,7 +45,6 @@ const EditJob = () => {
   
   useEffect(() => {
     if (id) {
-      // TODO: Заменить на получение данных из API
       setIsLoading(true);
       setTimeout(() => {
         const job = getJobById(id);
@@ -59,13 +58,13 @@ const EditJob = () => {
             description: job.description,
             requirements: job.requirements.join('\n'),
             responsibilities: job.responsibilities.join('\n'),
-            contact_name: 'HR Менеджер', // Временные данные
+            contact_name: 'HR Менеджер',
             contact_phone: '+7 (999) 123-45-67',
             contact_email: `hr@${job.company.toLowerCase().replace(/\s+/g, '')}.com`,
             contact_telegram: `@hr_${job.company.toLowerCase().replace(/\s+/g, '')}`,
-            isPremium: job.id === '1' || job.id === '3', // Условно для демонстрации
-            isFeatured: job.id === '1' || job.id === '2', // Условно для демонстрации
-            status: ['draft', 'review', 'published', 'archived'][Math.floor(Math.random() * 4)] as 'draft' | 'review' | 'published' | 'archived',
+            isPremium: job.id === '1' || job.id === '3',
+            isFeatured: job.featured || false,
+            status: 'published',
             featured: job.featured || false,
           });
         } else {
@@ -86,7 +85,6 @@ const EditJob = () => {
     const { id, value } = e.target;
     setFormData(prev => ({ ...prev, [id]: value }));
     
-    // Очищаем ошибку для этого поля, если она существует
     if (errors[id]) {
       setErrors(prev => {
         const newErrors = { ...prev };
@@ -99,7 +97,6 @@ const EditJob = () => {
   const handleSelectChange = (value: string, fieldName: string) => {
     setFormData(prev => ({ ...prev, [fieldName]: value }));
     
-    // Очищаем ошибку для этого поля, если она существует
     if (errors[fieldName]) {
       setErrors(prev => {
         const newErrors = { ...prev };
@@ -117,25 +114,21 @@ const EditJob = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
-    // Проверяем обязательные поля
     if (!formData.title.trim()) newErrors.title = 'Введите название должности';
     if (!formData.company.trim()) newErrors.company = 'Введите название компании';
     if (!formData.location.trim()) newErrors.location = 'Введите местоположение';
     if (!formData.type) newErrors.type = 'Выберите тип занятости';
     
-    // Проверяем зарплату - должна содержать хотя бы одну цифру
     if (!formData.salary.trim()) {
       newErrors.salary = 'Введите информацию о зарплате';
     } else if (!/\d/.test(formData.salary)) {
       newErrors.salary = 'Зарплата должна содержать хотя бы одну цифру';
     }
     
-    // Проверяем описание
     if (!formData.description.trim()) newErrors.description = 'Добавьте описание вакансии';
     if (!formData.requirements.trim()) newErrors.requirements = 'Укажите требования';
     if (!formData.responsibilities.trim()) newErrors.responsibilities = 'Укажите обязанности';
     
-    // Проверяем контакты (хотя бы один способ связи должен быть указан)
     if (!formData.contact_name.trim()) newErrors.contact_name = 'Укажите контактное лицо';
     
     const hasEmail = formData.contact_email.trim() !== '';
@@ -157,15 +150,12 @@ const EditJob = () => {
     
     setIsSubmitting(true);
     
-    // TODO: Отправить данные на сервер
-    // TODO: Реализовать платную публикацию вакансий (выделение в поиске)
-    // TODO: Реализовать обработку рекомендуемых вакансий
     setTimeout(() => {
       setIsSubmitting(false);
       toast({
         title: 'Вакансия обновлена',
         description: `Изменения успешно сохранены. ${formData.isPremium ? 'Вакансия выделена в результатах поиска.' : ''}${formData.isFeatured ? ' Вакансия добавлена в рекомендуемые.' : ''}`,
-        duration: 5000, // Автозакрытие через 5 секунд
+        duration: 5000,
       });
       navigate('/my-jobs');
     }, 1000);
@@ -418,24 +408,6 @@ const EditJob = () => {
                 >
                   Добавить в рекомендуемые вакансии (платно)
                 </label>
-              </div>
-              
-              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <Label htmlFor="status">Статус публикации</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) => handleSelectChange(value as 'draft' | 'review' | 'published' | 'archived', 'status')}
-                >
-                  <SelectTrigger id="status">
-                    <SelectValue placeholder="Выберите статус" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="draft">Черновик</SelectItem>
-                    <SelectItem value="review">На проверке</SelectItem>
-                    <SelectItem value="published">Опубликована</SelectItem>
-                    <SelectItem value="archived">Архивирована</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
               
               <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
