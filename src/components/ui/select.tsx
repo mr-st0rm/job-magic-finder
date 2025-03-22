@@ -83,6 +83,7 @@ const SelectContent = React.forwardRef<
       style={{
         backgroundColor: 'var(--select-content-bg)'
       }}
+      data-radix-select-content
       {...props}
     >
       <SelectScrollUpButton />

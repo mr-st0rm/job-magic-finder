@@ -122,6 +122,42 @@
   @apply text-gray-200;
 }
 
+/* Fix for dropdown menus in dark mode */
+.dark [data-radix-dropdown-menu-content] {
+  @apply bg-gray-800 border-gray-700 text-gray-200;
+}
+
+.dark [data-radix-dropdown-menu-item] {
+  @apply hover:bg-gray-700 hover:text-gray-100;
+}
+
+/* Animated toasts that auto-dismiss */
+[data-sonner-toast] {
+  animation: toast-in 0.3s ease forwards, toast-out 0.3s ease forwards 4.7s;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toast-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+}
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
