@@ -80,6 +80,9 @@ const SelectContent = React.forwardRef<
         className
       )}
       position={position}
+      style={{
+        backgroundColor: 'var(--select-content-bg)'
+      }}
       {...props}
     >
       <SelectScrollUpButton />

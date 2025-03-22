@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { PlusCircle, CircleEllipsis, Eye, Mail, Search, Pencil, ExternalLink, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { PlusCircle, CircleEllipsis, Eye, Search, Pencil, ExternalLink, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { getRecentJobs, JobListing } from '@/data/jobs';
@@ -225,7 +225,7 @@ const MyJobs = () => {
                       Опубликовано {job.postedAt}
                     </p>
                     
-                    <div className="mt-3 grid grid-cols-2 gap-2">
+                    <div className="mt-3 grid grid-cols-1 gap-2">
                       <div className="flex flex-col items-center py-2 px-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         <div className="flex items-center gap-1">
                           <Eye className="h-4 w-4 text-gray-500 dark:text-gray-400" />
@@ -233,29 +233,21 @@ const MyJobs = () => {
                         </div>
                         <span className="text-xs text-gray-500 dark:text-gray-400">Просмотры</span>
                       </div>
-                      
-                      <div className="flex flex-col items-center py-2 px-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <div className="flex items-center gap-1">
-                          <Mail className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                          <span className="font-medium text-gray-900 dark:text-white">{job.contactsViewed}</span>
-                        </div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">Контакты</span>
-                      </div>
                     </div>
                   </div>
                 </div>
                 
                 <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-                  <div className="flex justify-between">
+                  <div className="flex flex-col gap-2">
                     <div>
                       {job.status === 'published' && (
                         <Button 
                           variant="outline" 
                           size="sm"
                           onClick={() => updateJobStatus(job.id, 'archived')}
-                          className="mr-2"
+                          className="w-full"
                         >
-                          <AlertCircle className="h-4 w-4 mr-1" />
+                          <AlertCircle className="h-4 w-4 mr-2" />
                           Снять с публикации
                         </Button>
                       )}
@@ -265,22 +257,34 @@ const MyJobs = () => {
                           variant="outline" 
                           size="sm"
                           onClick={() => updateJobStatus(job.id, 'published')}
-                          className="mr-2"
+                          className="w-full"
                         >
-                          <CheckCircle className="h-4 w-4 mr-1" />
+                          <CheckCircle className="h-4 w-4 mr-2" />
                           Опубликовать
+                        </Button>
+                      )}
+                      
+                      {job.status === 'draft' && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => updateJobStatus(job.id, 'published')}
+                          className="w-full"
+                        >
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Опубликовать черновик
                         </Button>
                       )}
                     </div>
                     
-                    <div>
+                    <div className="grid grid-cols-2 gap-2">
                       <Button 
                         variant="ghost" 
                         size="sm"
                         onClick={() => navigate(`/job/${job.id}`)}
-                        className="flex items-center mr-2"
+                        className="flex items-center justify-center"
                       >
-                        <ExternalLink className="h-4 w-4 mr-1" />
+                        <ExternalLink className="h-4 w-4 mr-2" />
                         Просмотр
                       </Button>
                       
@@ -288,9 +292,9 @@ const MyJobs = () => {
                         variant="ghost" 
                         size="sm"
                         onClick={() => navigate(`/edit-job/${job.id}`)}
-                        className="flex items-center"
+                        className="flex items-center justify-center"
                       >
-                        <Pencil className="h-4 w-4 mr-1" />
+                        <Pencil className="h-4 w-4 mr-2" />
                         Редактировать
                       </Button>
                     </div>
