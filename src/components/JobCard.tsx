@@ -8,9 +8,10 @@ interface JobCardProps {
   job: JobListing;
   featured?: boolean;
   className?: string;
+  compact?: boolean; // Add the compact prop to the interface
 }
 
-export const JobCard = ({ job, featured = false, className }: JobCardProps) => {
+export const JobCard = ({ job, featured = false, className, compact = false }: JobCardProps) => {
   const getTagClass = (index: number) => {
     const classes = [
       'job-tag-blue',
@@ -22,6 +23,57 @@ export const JobCard = ({ job, featured = false, className }: JobCardProps) => {
     return classes[index % classes.length];
   };
 
+  // If compact mode is enabled, render a simplified version
+  if (compact) {
+    return (
+      <Link 
+        to={`/job/${job.id}`} 
+        className={cn(
+          'block group',
+          className
+        )}
+      >
+        <div className={cn(
+          'relative overflow-hidden rounded-xl p-4 transition-all duration-300',
+          'bg-white border border-gray-100 hover:shadow-md',
+          'dark:bg-gray-800 dark:border-gray-700',
+          featured && 'ring-2 ring-primary/10',
+        )}>
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0">
+              <div className="w-10 h-10 rounded bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+                {job.logo ? (
+                  <img 
+                    src={job.logo} 
+                    alt={`${job.company} logo`} 
+                    className="w-8 h-8 object-contain"
+                  />
+                ) : (
+                  <span className="text-lg font-bold text-gray-500">
+                    {job.company.charAt(0)}
+                  </span>
+                )}
+              </div>
+            </div>
+            
+            <div className="flex-1 min-w-0">
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors duration-200">
+                {job.title}
+              </h3>
+              
+              <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                <span className="truncate">{job.company}</span>
+                <span className="mx-1">•</span>
+                <span>{job.salary}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Link>
+    );
+  }
+
+  // Regular card layout
   return (
     <Link 
       to={`/job/${job.id}`} 
