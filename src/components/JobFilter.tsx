@@ -3,6 +3,9 @@ import { useState } from 'react';
 import { jobCategories, jobTypes, locations, salaryRanges } from '@/data/jobs';
 import { Filter, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 interface FilterOption {
   category?: string;
@@ -45,34 +48,29 @@ export const JobFilter = ({ onFilterChange, className, initialFilters = {} }: Jo
   }) => (
     <div className="mb-6">
       <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">{title}</h3>
-      <div className="space-y-2">
-        {options.map((option) => (
-          <div key={option} className="flex items-center">
-            <input
-              id={`${filterKey}-${option}`}
-              name={filterKey}
-              type="radio"
-              checked={currentValue === option}
-              onChange={() => handleFilterChange(filterKey, option)}
-              className="h-4 w-4 text-primary border-gray-300 focus:ring-primary"
-            />
-            <label
-              htmlFor={`${filterKey}-${option}`}
-              className="ml-2 text-sm text-gray-700 dark:text-gray-300"
-            >
-              {option}
-            </label>
-          </div>
-        ))}
-      </div>
+      <RadioGroup value={currentValue} onValueChange={(value) => handleFilterChange(filterKey, value)}>
+        <div className="space-y-2">
+          {options.map((option) => (
+            <div key={option} className="flex items-center">
+              <RadioGroupItem id={`${filterKey}-${option}`} value={option} />
+              <Label
+                htmlFor={`${filterKey}-${option}`}
+                className="ml-2 text-sm text-gray-700 dark:text-gray-300"
+              >
+                {option}
+              </Label>
+            </div>
+          ))}
+        </div>
+      </RadioGroup>
     </div>
   );
 
-  const hasActiveFilters = Object.values(filters).some(value => value && !value.includes('All'));
+  const hasActiveFilters = Object.values(filters).some(value => value && !value.includes('Все'));
 
   return (
     <div className={className}>
-      {/* Mobile filter dialog */}
+      {/* Диалог мобильного фильтра */}
       <div className="relative md:hidden">
         <button
           type="button"
@@ -83,7 +81,7 @@ export const JobFilter = ({ onFilterChange, className, initialFilters = {} }: Jo
           Фильтры
           {hasActiveFilters && (
             <span className="ml-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-medium text-white">
-              {Object.values(filters).filter(value => value && !value.includes('All')).length}
+              {Object.values(filters).filter(value => value && !value.includes('Все')).length}
             </span>
           )}
         </button>
@@ -105,13 +103,13 @@ export const JobFilter = ({ onFilterChange, className, initialFilters = {} }: Jo
 
                 <div className="p-4">
                   {hasActiveFilters && (
-                    <button
-                      type="button"
-                      className="text-sm text-primary hover:text-primary/90 mb-4"
+                    <Button
+                      variant="link"
+                      className="text-sm text-primary hover:text-primary/90 mb-4 p-0"
                       onClick={clearFilters}
                     >
                       Сбросить все фильтры
-                    </button>
+                    </Button>
                   )}
 
                   <FilterSection 
@@ -145,19 +143,19 @@ export const JobFilter = ({ onFilterChange, className, initialFilters = {} }: Jo
         )}
       </div>
 
-      {/* Desktop filters */}
+      {/* Десктопные фильтры */}
       <div className="hidden md:block">
         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-medium text-gray-900 dark:text-white">Фильтры</h2>
             {hasActiveFilters && (
-              <button
-                type="button"
-                className="text-sm text-primary hover:text-primary/90"
+              <Button
+                variant="link"
+                className="text-sm text-primary hover:text-primary/90 p-0"
                 onClick={clearFilters}
               >
                 Сбросить
-              </button>
+              </Button>
             )}
           </div>
 

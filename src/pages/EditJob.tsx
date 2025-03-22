@@ -8,6 +8,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
 import { getJobById } from '@/data/jobs';
 import { CircleEllipsis } from 'lucide-react';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const EditJob = () => {
   const { id } = useParams<{ id: string }>();
@@ -24,6 +31,8 @@ const EditJob = () => {
     contact_phone: '',
     contact_email: '',
     contact_telegram: '',
+    isPremium: false,
+    isFeatured: false,
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,10 +57,12 @@ const EditJob = () => {
             description: job.description,
             requirements: job.requirements.join('\n'),
             responsibilities: job.responsibilities.join('\n'),
-            contact_name: 'HR Manager', // Placeholder data
+            contact_name: 'HR Менеджер', // Временные данные
             contact_phone: '+7 (999) 123-45-67',
             contact_email: `hr@${job.company.toLowerCase().replace(/\s+/g, '')}.com`,
             contact_telegram: `@hr_${job.company.toLowerCase().replace(/\s+/g, '')}`,
+            isPremium: job.id === '1' || job.id === '3', // Условно для демонстрации
+            isFeatured: job.id === '1' || job.id === '2', // Условно для демонстрации
           });
         } else {
           toast({
@@ -66,11 +77,11 @@ const EditJob = () => {
     }
   }, [id, navigate, toast]);
   
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
     setFormData(prev => ({ ...prev, [id]: value }));
     
-    // Clear error for this field if it exists
+    // Очищаем ошибку для этого поля, если она существует
     if (errors[id]) {
       setErrors(prev => {
         const newErrors = { ...prev };
@@ -78,6 +89,24 @@ const EditJob = () => {
         return newErrors;
       });
     }
+  };
+  
+  const handleSelectChange = (value: string, fieldName: string) => {
+    setFormData(prev => ({ ...prev, [fieldName]: value }));
+    
+    // Очищаем ошибку для этого поля, если она существует
+    if (errors[fieldName]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[fieldName];
+        return newErrors;
+      });
+    }
+  };
+  
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, checked } = e.target;
+    setFormData(prev => ({ ...prev, [id]: checked }));
   };
   
   const validateForm = () => {
@@ -110,8 +139,6 @@ const EditJob = () => {
     
     if (!hasEmail && !hasPhone && !hasTelegram) {
       newErrors.contact_email = 'Укажите хотя бы один способ связи';
-      newErrors.contact_phone = 'Укажите хотя бы один способ связи';
-      newErrors.contact_telegram = 'Укажите хотя бы один способ связи';
     }
     
     setErrors(newErrors);
@@ -126,11 +153,15 @@ const EditJob = () => {
     setIsSubmitting(true);
     
     // TODO: Отправить данные на сервер
+    // TODO: Реализовать платную публикацию вакансий
+    // TODO: Реализовать обработку рекомендуемых/выделенных вакансий
     setTimeout(() => {
       setIsSubmitting(false);
       toast({
         title: 'Вакансия обновлена',
-        description: 'Изменения успешно сохранены'
+        description: formData.isPremium 
+          ? 'Изменения успешно сохранены. Вакансия имеет премиум-статус.' 
+          : 'Изменения успешно сохранены'
       });
       navigate('/my-jobs');
     }, 1000);
@@ -199,18 +230,20 @@ const EditJob = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="type" className={errors.type ? 'text-destructive' : ''}>Тип занятости</Label>
-                  <select 
-                    id="type" 
-                    className={`w-full h-10 px-3 py-2 bg-transparent border ${errors.type ? 'border-destructive' : 'border-input'} rounded-md`}
+                  <Select
                     value={formData.type}
-                    onChange={handleChange}
+                    onValueChange={(value) => handleSelectChange(value, 'type')}
                   >
-                    <option value="">Выберите тип</option>
-                    <option value="Полная занятость">Полная занятость</option>
-                    <option value="Частичная занятость">Частичная занятость</option>
-                    <option value="Проектная работа">Проектная работа</option>
-                    <option value="Стажировка">Стажировка</option>
-                  </select>
+                    <SelectTrigger className={errors.type ? 'border-destructive' : ''}>
+                      <SelectValue placeholder="Выберите тип" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Полная занятость">Полная занятость</SelectItem>
+                      <SelectItem value="Частичная занятость">Частичная занятость</SelectItem>
+                      <SelectItem value="Проектная работа">Проектная работа</SelectItem>
+                      <SelectItem value="Стажировка">Стажировка</SelectItem>
+                    </SelectContent>
+                  </Select>
                   {errors.type && <p className="text-xs text-destructive mt-1">{errors.type}</p>}
                 </div>
                 
@@ -342,6 +375,53 @@ const EditJob = () => {
                 </div>
               </div>
               <p className="text-xs text-gray-500">* Укажите хотя бы один способ связи (телефон, email или Telegram)</p>
+            </div>
+          </div>
+          
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+              Параметры публикации
+            </h2>
+            
+            <div className="space-y-4">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="isPremium"
+                  checked={formData.isPremium}
+                  onChange={handleCheckboxChange}
+                  className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
+                />
+                <label
+                  htmlFor="isPremium"
+                  className="ml-2 block text-sm text-gray-900 dark:text-gray-100"
+                >
+                  Платная публикация (выше в поиске)
+                </label>
+              </div>
+              
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="isFeatured"
+                  checked={formData.isFeatured}
+                  onChange={handleCheckboxChange}
+                  className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
+                />
+                <label
+                  htmlFor="isFeatured"
+                  className="ml-2 block text-sm text-gray-900 dark:text-gray-100"
+                >
+                  Рекомендуемая вакансия (появится в блоке рекомендуемых)
+                </label>
+              </div>
+              
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  <strong>Обратите внимание:</strong> Платные публикации и рекомендуемые вакансии тарифицируются отдельно.
+                  {/* TODO: Добавить информацию о стоимости публикации */}
+                </p>
+              </div>
             </div>
           </div>
           
