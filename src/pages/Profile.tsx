@@ -1,10 +1,9 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   User, 
   Settings, 
-  LogOut, 
   BriefcaseBusiness, 
   Bell,
   ChevronRight, 
@@ -21,11 +20,24 @@ import { useToast } from '@/components/ui/use-toast';
 const Profile = () => {
   const [darkMode, setDarkMode] = useState(false);
   const navigate = useNavigate();
-  const { role, toggleRole, logout } = useUser();
+  const { role, toggleRole } = useUser();
   const { toast } = useToast();
 
+  // Check for saved theme preference
+  useEffect(() => {
+    const isDarkMode = localStorage.getItem('darkMode') === 'true';
+    setDarkMode(isDarkMode);
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, []);
+
   const handleToggleDarkMode = () => {
-    setDarkMode(!darkMode);
+    const newDarkMode = !darkMode;
+    setDarkMode(newDarkMode);
+    localStorage.setItem('darkMode', newDarkMode.toString());
     document.documentElement.classList.toggle('dark');
   };
 
@@ -164,21 +176,6 @@ const Profile = () => {
           </div>
         </section>
       )}
-
-      {/* Кнопка выхода */}
-      <section className="py-3">
-        <Button 
-          variant="destructive" 
-          className="w-full"
-          onClick={() => {
-            logout();
-            navigate('/');
-          }}
-        >
-          <LogOut className="h-5 w-5 mr-2" />
-          Выйти
-        </Button>
-      </section>
     </div>
   );
 };

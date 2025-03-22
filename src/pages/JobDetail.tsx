@@ -266,15 +266,6 @@ const JobDetail = () => {
           )}
         </div>
       </section>
-
-      {/* Действие внизу страницы */}
-      {role !== 'recruiter' && (
-        <div className="fixed bottom-16 left-0 right-0 p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-          <div className="container-custom">
-            <Button className="w-full">Откликнуться на вакансию</Button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
