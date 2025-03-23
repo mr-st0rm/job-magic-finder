@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search as SearchIcon, MapPin, Loader2, Filter, X } from 'lucide-react';
@@ -25,7 +24,6 @@ const Search = () => {
   const [filters, setFilters] = useState(initialFilters);
 
   useEffect(() => {
-    // TODO: Заменить на получение данных из API
     setLoading(true);
     setTimeout(() => {
       const query = searchParams.get('q') || '';
@@ -47,7 +45,6 @@ const Search = () => {
     if (query) params.set('q', query);
     if (location) params.set('location', location);
     
-    // Добавляем фильтры к параметрам
     Object.entries(filters).forEach(([key, value]) => {
       if (value && value !== '') {
         params.set(key, value);
@@ -89,7 +86,6 @@ const Search = () => {
 
   return (
     <div className="container-custom px-4">
-      {/* Поисковая форма */}
       <section className="pt-6 pb-4">
         <SearchForm 
           className="w-full" 
@@ -187,7 +183,6 @@ const Search = () => {
         </div>
       </section>
 
-      {/* Активные фильтры */}
       {hasActiveFilters && (
         <div className="flex flex-wrap gap-2 mb-4">
           {Object.entries(filters).map(([key, value]) => {
@@ -220,7 +215,6 @@ const Search = () => {
         </div>
       )}
 
-      {/* Результаты поиска */}
       <section className="py-2">
         {loading ? (
           <div className="flex flex-col items-center justify-center py-12">

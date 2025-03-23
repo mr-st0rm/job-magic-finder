@@ -1,7 +1,8 @@
 
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Briefcase } from 'lucide-react';
+import { MapPin, Briefcase, Sparkles } from 'lucide-react';
 import { JobListing } from '@/data/jobs';
+import { cn } from '@/lib/utils';
 
 interface JobCardCompactProps {
   job: JobListing;
@@ -46,12 +47,27 @@ export const JobCardCompact = ({ job, compact = false }: JobCardCompactProps) =>
     );
   }
 
+  const isFeatured = job.featured;
+
   return (
     <div 
-      className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow"
+      className={cn(
+        "bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-100 dark:border-gray-700 cursor-pointer hover:shadow-md transition-shadow relative",
+        isFeatured && "ring-2 ring-primary/20",
+        isFeatured && "bg-primary/5 dark:bg-primary/10"
+      )}
       onClick={handleClick}
     >
-      <div className="flex items-start">
+      {isFeatured && (
+        <div className="absolute top-2 right-2 z-10">
+          <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+            <Sparkles className="mr-1 h-3 w-3" />
+            Рекомендуемая
+          </span>
+        </div>
+      )}
+      
+      <div className="flex items-start mt-2">
         <div className="w-12 h-12 mr-4 rounded overflow-hidden flex-shrink-0">
           <img 
             src={job.logo || '/placeholder.svg'} 
