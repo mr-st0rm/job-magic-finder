@@ -131,6 +131,15 @@
   @apply hover:bg-gray-700 hover:text-gray-100;
 }
 
+/* Specific fix for select elements in Search page filters */
+.dark select {
+  @apply bg-gray-800 text-gray-200 border-gray-700;
+}
+
+.dark select option {
+  @apply bg-gray-800 text-gray-200;
+}
+
 /* Animated toasts that auto-dismiss */
 [data-sonner-toast] {
   animation: toast-in 0.3s ease forwards, toast-out 0.3s ease forwards 4.7s;

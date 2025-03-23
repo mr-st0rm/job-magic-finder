@@ -117,9 +117,9 @@ const Search = () => {
               </DrawerHeader>
               <div className="p-4 space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Категория</label>
+                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Категория</label>
                   <select 
-                    className="w-full p-2 border rounded-md bg-transparent"
+                    className="w-full p-2 border rounded-md bg-transparent dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700"
                     value={filters.category}
                     onChange={(e) => handleFilterChange('category', e.target.value)}
                   >
@@ -131,9 +131,9 @@ const Search = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Тип занятости</label>
+                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Тип занятости</label>
                   <select 
-                    className="w-full p-2 border rounded-md bg-transparent"
+                    className="w-full p-2 border rounded-md bg-transparent dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700"
                     value={filters.type}
                     onChange={(e) => handleFilterChange('type', e.target.value)}
                   >
@@ -145,9 +145,9 @@ const Search = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Местоположение</label>
+                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Местоположение</label>
                   <select 
-                    className="w-full p-2 border rounded-md bg-transparent"
+                    className="w-full p-2 border rounded-md bg-transparent dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700"
                     value={filters.location}
                     onChange={(e) => handleFilterChange('location', e.target.value)}
                   >
@@ -159,9 +159,9 @@ const Search = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Зарплата</label>
+                  <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Зарплата</label>
                   <select 
-                    className="w-full p-2 border rounded-md bg-transparent"
+                    className="w-full p-2 border rounded-md bg-transparent dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700"
                     value={filters.salary}
                     onChange={(e) => handleFilterChange('salary', e.target.value)}
                   >
