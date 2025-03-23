@@ -42,7 +42,15 @@ export const JobCard = ({ job, featured = false, className, compact = false }: J
           isFeatured && 'ring-2 ring-primary/20',
           isFeatured && 'bg-primary/5 dark:bg-primary/10',
         )}>
-          <div className="flex items-center gap-3">
+          {isFeatured && (
+            <div className="absolute top-2 right-2 z-10">
+              <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                <Sparkles className="mr-1 h-3 w-3" />
+                Рекомендуемая
+              </span>
+            </div>
+          )}
+          <div className="flex items-center gap-3 mt-4">
             <div className="flex-shrink-0">
               <div className="w-10 h-10 rounded bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
                 {job.logo ? (
@@ -60,16 +68,9 @@ export const JobCard = ({ job, featured = false, className, compact = false }: J
             </div>
             
             <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors duration-200">
-                  {job.title}
-                </h3>
-                {isFeatured && (
-                  <span className="ml-1 flex-shrink-0">
-                    <Sparkles className="h-3 w-3 text-primary" />
-                  </span>
-                )}
-              </div>
+              <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors duration-200">
+                {job.title}
+              </h3>
               
               <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
                 <span className="truncate">{job.company}</span>
