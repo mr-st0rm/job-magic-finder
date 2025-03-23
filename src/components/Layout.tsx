@@ -41,8 +41,13 @@ const Layout = ({ children }: LayoutProps) => {
     }
   };
 
-  // Проверка, находимся ли мы на главной странице
-  const isHome = location.pathname === '/';
+  // Определяем, находимся ли мы на главной странице
+  const isMainPage = location.pathname === '/' || 
+                     location.pathname === '/my-jobs' || 
+                     (role === 'recruiter' && location.pathname === '/');
+  
+  // Не показываем кнопку назад на главных страницах для рекрутера
+  const showBackButton = !isMainPage && !(role === 'recruiter' && location.pathname === '/');
 
   return (
     <div className={`min-h-screen bg-gray-50 dark:bg-gray-900`}>
@@ -50,7 +55,7 @@ const Layout = ({ children }: LayoutProps) => {
       <header className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <div className="container-custom flex items-center justify-between h-14 px-4">
           <div className="flex items-center">
-            {!isHome && (
+            {showBackButton && (
               <Button 
                 variant="ghost" 
                 size="icon" 
