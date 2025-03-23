@@ -60,12 +60,12 @@ export const JobCard = ({ job, featured = false, className, compact = false }: J
             </div>
             
             <div className="flex-1 min-w-0">
-              <div className="flex items-center">
-                <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors duration-200 mr-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors duration-200">
                   {job.title}
                 </h3>
                 {isFeatured && (
-                  <span className="absolute right-4 top-4">
+                  <span className="ml-1 flex-shrink-0">
                     <Sparkles className="h-3 w-3 text-primary" />
                   </span>
                 )}
@@ -126,7 +126,7 @@ export const JobCard = ({ job, featured = false, className, compact = false }: J
           </div>
           
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors duration-200 pr-24">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors duration-200 pr-24 md:pr-24 sm:pr-24 xs:pr-0">
               {job.title}
             </h3>
             
