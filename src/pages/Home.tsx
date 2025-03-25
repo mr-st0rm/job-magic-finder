@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getRecentJobs, getFeaturedJobs, JobListing } from '@/data/jobs';
+import { getRecentJobs, getFeaturedJobs, getRecommendedJobs, JobListing } from '@/data/jobs';
 import { JobCard } from '@/components/JobCard';
 import { CircleEllipsis } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
@@ -9,6 +9,7 @@ import SearchForm from '@/components/SearchForm';
 
 const Home = () => {
   const [featuredJobs, setFeaturedJobs] = useState<JobListing[]>([]);
+  const [recommendedJobs, setRecommendedJobs] = useState<JobListing[]>([]);
   const [recentJobs, setRecentJobs] = useState<JobListing[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ const Home = () => {
     setLoading(true);
     setTimeout(() => {
       setFeaturedJobs(getFeaturedJobs());
+      setRecommendedJobs(getRecommendedJobs());
       setRecentJobs(getRecentJobs());
       setLoading(false);
     }, 500);
@@ -48,6 +50,19 @@ const Home = () => {
       <section className="py-4">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
           Рекомендуемые вакансии
+        </h2>
+        
+        <div className="space-y-4">
+          {recommendedJobs.map((job) => (
+            <JobCard key={job.id} job={job} />
+          ))}
+        </div>
+      </section>
+
+      {/* Выделенные вакансии */}
+      <section className="py-4">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+          Выделенные вакансии
         </h2>
         
         <div className="space-y-4">

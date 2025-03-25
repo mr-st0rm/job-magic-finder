@@ -1,4 +1,3 @@
-
 export type JobListing = {
   id: string;
   title: string;
@@ -14,6 +13,9 @@ export type JobListing = {
   requirements: string[];
   responsibilities: string[];
   featured: boolean;
+  recommended?: boolean;
+  views?: number;
+  contactsViewed?: number;
   companyInfo: {
     name: string;
     website: string;
@@ -37,6 +39,9 @@ export const jobs: JobListing[] = [
     tags: ['UI/UX', 'Figma', 'Adobe XD', 'Product Design'],
     postedAt: '2 days ago',
     featured: true,
+    recommended: true,
+    views: 124,
+    contactsViewed: 45,
     description: 'We are looking for an experienced UI/UX Designer to join our product team. You will be responsible for creating beautiful, intuitive interfaces that help our users achieve their goals.',
     requirements: [
       '5+ years of experience in UI/UX design',
@@ -72,7 +77,10 @@ export const jobs: JobListing[] = [
     category: 'Development',
     tags: ['React', 'TypeScript', 'CSS', 'Frontend'],
     postedAt: '3 days ago',
-    featured: true,
+    featured: false,
+    recommended: true,
+    views: 98,
+    contactsViewed: 32,
     description: 'Join our frontend team to build engaging user experiences for millions of music lovers around the world. You\'ll work on our web application using modern technologies.',
     requirements: [
       '3+ years of experience with React',
@@ -109,6 +117,9 @@ export const jobs: JobListing[] = [
     tags: ['Product Management', 'Agile', 'B2B', 'SaaS'],
     postedAt: '1 week ago',
     featured: false,
+    recommended: true,
+    views: 76,
+    contactsViewed: 23,
     description: 'We\'re looking for a talented Product Manager to help us define and execute our product vision. You\'ll work closely with engineering, design, and other stakeholders to build products that users love.',
     requirements: [
       '4+ years of product management experience',
@@ -145,6 +156,9 @@ export const jobs: JobListing[] = [
     tags: ['Python', 'Machine Learning', 'SQL', 'Data Analysis'],
     postedAt: '2 weeks ago',
     featured: false,
+    recommended: true,
+    views: 67,
+    contactsViewed: 15,
     description: 'Join our data science team to help us understand user behavior and improve our recommendation algorithms. You\'ll analyze large datasets and build models to enhance the Netflix experience.',
     requirements: [
       'MS or PhD in Computer Science, Statistics, or related field',
@@ -181,6 +195,9 @@ export const jobs: JobListing[] = [
     tags: ['Node.js', 'Python', 'AWS', 'Backend'],
     postedAt: '3 weeks ago',
     featured: false,
+    recommended: true,
+    views: 54,
+    contactsViewed: 12,
     description: 'We are seeking a Backend Engineer to join our team and help build scalable systems that power the Airbnb platform. You\'ll work on high-performance APIs and services that millions of users rely on.',
     requirements: [
       '5+ years of backend development experience',
@@ -217,6 +234,9 @@ export const jobs: JobListing[] = [
     tags: ['Digital Marketing', 'Content Strategy', 'SEO', 'Analytics'],
     postedAt: '1 month ago',
     featured: false,
+    recommended: true,
+    views: 43,
+    contactsViewed: 8,
     description: 'We\'re looking for a Marketing Manager to lead our digital marketing efforts. You\'ll develop and execute marketing strategies to drive awareness and adoption of our creative products.',
     requirements: [
       '5+ years of experience in digital marketing',
@@ -253,6 +273,9 @@ export const jobs: JobListing[] = [
     tags: ['Docker', 'Kubernetes', 'CI/CD', 'AWS', 'Infrastructure'],
     postedAt: '2 days ago',
     featured: true,
+    recommended: true,
+    views: 32,
+    contactsViewed: 10,
     description: 'Join our infrastructure team to help scale and maintain our cloud-based systems. You\'ll work on automation, monitoring, and improving our deployment pipelines.',
     requirements: [
       '4+ years of DevOps or SRE experience',
@@ -289,6 +312,9 @@ export const jobs: JobListing[] = [
     tags: ['iOS', 'Swift', 'Android', 'Kotlin', 'Mobile'],
     postedAt: '4 days ago',
     featured: false,
+    recommended: true,
+    views: 21,
+    contactsViewed: 5,
     description: 'We\'re looking for a talented Mobile Developer to join our team and help build our next-generation mobile applications. You\'ll work on feature development and performance optimization.',
     requirements: [
       '4+ years of mobile development experience',
@@ -357,6 +383,10 @@ export const salaryRanges = [
 
 export const getFeaturedJobs = () => {
   return jobs.filter(job => job.featured).slice(0, 3);
+};
+
+export const getRecommendedJobs = () => {
+  return jobs.filter(job => job.recommended).slice(0, 3);
 };
 
 export const getRecentJobs = () => {

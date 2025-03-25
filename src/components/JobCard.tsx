@@ -23,7 +23,11 @@ export const JobCard = ({ job, featured = false, className, compact = false }: J
     return classes[index % classes.length];
   };
 
+  // Determine if job is featured (different background style)
   const isFeatured = job.featured || featured;
+  
+  // Determine if job is recommended (badge)
+  const isRecommended = job.recommended;
 
   // If compact mode is enabled, render a simplified version
   if (compact) {
@@ -42,7 +46,7 @@ export const JobCard = ({ job, featured = false, className, compact = false }: J
           isFeatured && 'ring-2 ring-primary/20',
           isFeatured && 'bg-primary/5 dark:bg-primary/10',
         )}>
-          {isFeatured && (
+          {isRecommended && (
             <div className="absolute top-2 right-2 z-10">
               <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                 <Sparkles className="mr-1 h-3 w-3" />
@@ -100,7 +104,7 @@ export const JobCard = ({ job, featured = false, className, compact = false }: J
         isFeatured && 'ring-2 ring-primary/20',
         isFeatured && 'bg-primary/5 dark:bg-primary/10',
       )}>
-        {isFeatured && (
+        {isRecommended && (
           <div className="absolute top-3 right-3 z-10">
             <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
               <Sparkles className="mr-1 h-3 w-3" />
