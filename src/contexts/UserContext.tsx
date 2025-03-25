@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 export type UserRole = 'applicant' | 'recruiter';
 
@@ -14,12 +14,24 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
-  const [role, setRole] = useState<UserRole>('applicant');
+  // Get the initial role from localStorage or default to 'applicant'
+  const [role, setRole] = useState<UserRole>(() => {
+    const savedRole = localStorage.getItem('userRole');
+    return (savedRole as UserRole) || 'applicant';
+  });
+  
   const [isAuthenticated, setIsAuthenticated] = useState(true); // Для тестирования сразу авторизованы
 
   const toggleRole = () => {
-    setRole(prev => prev === 'applicant' ? 'recruiter' : 'applicant');
+    const newRole = role === 'applicant' ? 'recruiter' : 'applicant';
+    setRole(newRole);
+    localStorage.setItem('userRole', newRole);
   };
+
+  // Save role to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('userRole', role);
+  }, [role]);
 
   const login = () => setIsAuthenticated(true);
   const logout = () => setIsAuthenticated(false);

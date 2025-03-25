@@ -16,6 +16,7 @@ const Home = () => {
   const { role } = useUser();
 
   useEffect(() => {
+    // Redirect to my-jobs if user is a recruiter
     if (role === 'recruiter') {
       navigate('/my-jobs');
       return;
