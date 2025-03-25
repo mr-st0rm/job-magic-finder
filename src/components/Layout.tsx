@@ -44,10 +44,11 @@ const Layout = ({ children }: LayoutProps) => {
   // Определяем, находимся ли мы на главной странице
   const isMainPage = location.pathname === '/' || 
                      location.pathname === '/my-jobs' || 
+                     location.pathname === '/create-job' ||
                      (role === 'recruiter' && location.pathname === '/');
   
-  // Не показываем кнопку назад на главных страницах для рекрутера
-  const showBackButton = !isMainPage && !(role === 'recruiter' && location.pathname === '/');
+  // Не показываем кнопку назад на главных страницах
+  const showBackButton = !isMainPage;
 
   return (
     <div className={`min-h-screen bg-gray-50 dark:bg-gray-900`}>
