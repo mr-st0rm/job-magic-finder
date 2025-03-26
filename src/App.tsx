@@ -5,6 +5,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { UserProvider } from "./contexts/UserContext";
+
+// Page components
 import Home from "./pages/Home";
 import JobDetail from "./pages/JobDetail";
 import Profile from "./pages/Profile";
@@ -19,16 +21,35 @@ import Help from "./pages/Help";
 import Search from "./pages/Search";
 import EditJob from "./pages/EditJob";
 
-const queryClient = new QueryClient();
+/**
+ * Create a query client instance for React Query
+ * This will be used for data fetching and caching
+ */
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false, // Disable automatic refetches when window is focused
+      retry: 1, // Only retry failed requests once
+    },
+  },
+});
 
+/**
+ * Main application component
+ * Sets up providers and routing for the application
+ */
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <UserProvider>
+        {/* Toast notifications */}
         <Toaster />
         <Sonner />
+        
+        {/* Application routing */}
         <BrowserRouter>
           <Routes>
+            {/* All routes are wrapped with the Layout component for consistent UI */}
             <Route path="/" element={<Layout>{<Home />}</Layout>} />
             <Route path="/job/:id" element={<Layout>{<JobDetail />}</Layout>} />
             <Route path="/profile" element={<Layout>{<Profile />}</Layout>} />
@@ -40,6 +61,8 @@ const App = () => (
             <Route path="/notifications" element={<Layout>{<Notifications />}</Layout>} />
             <Route path="/help" element={<Layout>{<Help />}</Layout>} />
             <Route path="/search" element={<Layout>{<Search />}</Layout>} />
+            
+            {/* Catch-all route for 404 pages */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

@@ -6,6 +6,37 @@ import { JobCard } from '@/components/JobCard';
 import { CircleEllipsis } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import SearchForm from '@/components/SearchForm';
+import { useToast } from '@/hooks/use-toast';
+
+/**
+ * Section component to display a list of jobs with a title
+ * @param {Object} props - Component props
+ * @param {string} props.title - The section title
+ * @param {JobListing[]} props.jobs - Array of job listings to display
+ * @param {boolean} props.featured - Whether jobs should be displayed as featured
+ */
+const JobSection = ({ title, jobs, featured = false }: { title: string; jobs: JobListing[]; featured?: boolean }) => (
+  <section className="py-4">
+    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+      {title}
+    </h2>
+    
+    <div className="space-y-4">
+      {jobs.map((job) => (
+        <JobCard key={job.id} job={job} featured={featured} />
+      ))}
+    </div>
+  </section>
+);
+
+/**
+ * Loading spinner component
+ */
+const LoadingSpinner = () => (
+  <div className="flex justify-center items-center min-h-[calc(100vh-8rem)]">
+    <CircleEllipsis className="h-8 w-8 animate-spin text-primary" />
+  </div>
+);
 
 /**
  * Home page component
@@ -21,6 +52,7 @@ const Home = () => {
   // Hooks
   const navigate = useNavigate();
   const { role } = useUser();
+  const { toast } = useToast();
 
   useEffect(() => {
     // Redirect to my-jobs if user is a recruiter
@@ -35,32 +67,39 @@ const Home = () => {
 
   /**
    * Load job data from API or mock data
+   * In a real app, this would make API calls to fetch the different job categories
    */
-  const loadJobData = () => {
+  const loadJobData = async () => {
     setLoading(true);
     
-    // TODO: Replace with actual API calls
-    // Expected API endpoints:
-    // GET /api/jobs/featured - Expected response: { jobs: JobListing[] }
-    // GET /api/jobs/recommended - Expected response: { jobs: JobListing[] }
-    // GET /api/jobs/recent - Expected response: { jobs: JobListing[] }
-    
-    // Using setTimeout to simulate API delay
-    setTimeout(() => {
-      setFeaturedJobs(getFeaturedJobs());
-      setRecommendedJobs(getRecommendedJobs());
-      setRecentJobs(getRecentJobs());
+    try {
+      // TODO: Replace with actual API calls
+      // Expected API endpoints:
+      // GET /api/jobs/featured - Expected response: { jobs: JobListing[] }
+      // GET /api/jobs/recommended - Expected response: { jobs: JobListing[] }
+      // GET /api/jobs/recent - Expected response: { jobs: JobListing[] }
+      
+      // Using setTimeout to simulate API delay
+      setTimeout(() => {
+        setFeaturedJobs(getFeaturedJobs());
+        setRecommendedJobs(getRecommendedJobs());
+        setRecentJobs(getRecentJobs());
+        setLoading(false);
+      }, 500);
+    } catch (error) {
+      console.error('Failed to load jobs:', error);
+      toast({
+        title: "Ошибка загрузки",
+        description: "Не удалось загрузить список вакансий",
+        variant: "destructive",
+      });
       setLoading(false);
-    }, 500);
+    }
   };
 
   // Show loading spinner while data is being fetched
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[calc(100vh-8rem)]">
-        <CircleEllipsis className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
@@ -70,44 +109,10 @@ const Home = () => {
         <SearchForm className="w-full" />
       </section>
 
-      {/* Recommended jobs section */}
-      <section className="py-4">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-          Рекомендуемые вакансии
-        </h2>
-        
-        <div className="space-y-4">
-          {recommendedJobs.map((job) => (
-            <JobCard key={job.id} job={job} />
-          ))}
-        </div>
-      </section>
-
-      {/* Featured jobs section */}
-      <section className="py-4">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-          Выделенные вакансии
-        </h2>
-        
-        <div className="space-y-4">
-          {featuredJobs.map((job) => (
-            <JobCard key={job.id} job={job} featured={true} />
-          ))}
-        </div>
-      </section>
-
-      {/* Recent jobs section */}
-      <section className="py-4 mb-4">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-          Новые вакансии
-        </h2>
-        
-        <div className="space-y-4">
-          {recentJobs.map((job) => (
-            <JobCard key={job.id} job={job} />
-          ))}
-        </div>
-      </section>
+      {/* Job listing sections */}
+      <JobSection title="Рекомендуемые вакансии" jobs={recommendedJobs} />
+      <JobSection title="Выделенные вакансии" jobs={featuredJobs} featured={true} />
+      <JobSection title="Новые вакансии" jobs={recentJobs} />
     </div>
   );
 };

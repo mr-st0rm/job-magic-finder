@@ -2,18 +2,21 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { HelpCircle, MessageSquare } from "lucide-react";
+import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 /**
- * FAQ item structure
+ * FAQ item interface - defines the structure for each FAQ question/answer pair
  */
 interface FAQItem {
-  id: string;
-  question: string;
-  answer: string;
+  id: string;         // Unique identifier for the FAQ item
+  question: string;   // The question text
+  answer: string;     // The answer text
 }
 
 /**
  * Predefined frequently asked questions
+ * Each item has a unique ID, a question, and an answer
  */
 const faqItems: FAQItem[] = [
   {
@@ -39,7 +42,8 @@ const faqItems: FAQItem[] = [
 ];
 
 /**
- * FAQ Section component - displays accordion with FAQs
+ * FAQ Section component - displays an accordion with frequently asked questions
+ * @returns React component for the FAQ section
  */
 const FAQSection = () => (
   <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm mb-6">
@@ -50,7 +54,7 @@ const FAQSection = () => (
       </h2>
     </div>
     
-    {/* Accordion for FAQ items */}
+    {/* Accordion for FAQ items - only one item can be open at a time */}
     <Accordion type="single" collapsible className="w-full">
       {faqItems.map((item) => (
         <AccordionItem key={item.id} value={item.id}>
@@ -66,14 +70,29 @@ const FAQSection = () => (
 
 /**
  * Support Contact component - displays support contact options
+ * Provides a button to open a support chat
  */
 const SupportContact = () => {
+  // State to track if the chat request is being processed
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
   /**
-   * Handler for opening support chat
-   * @returns {void}
+   * Handles opening the support chat
+   * Shows a loading state and simulates the action with a toast notification
    */
   const handleOpenSupportChat = () => {
+    setIsLoading(true);
     console.log("Support chat requested");
+    
+    // Simulate API request with timeout
+    setTimeout(() => {
+      setIsLoading(false);
+      toast({
+        title: "Запрос отправлен",
+        description: "Оператор поддержки свяжется с вами в ближайшее время",
+      });
+    }, 1500);
     
     // TODO: Implement actual chat functionality with support team
     // Expected request: POST /api/support/chat { userId, topic? }
@@ -94,9 +113,10 @@ const SupportContact = () => {
         <Button 
           className="flex items-center gap-2"
           onClick={handleOpenSupportChat}
+          disabled={isLoading}
         >
           <MessageSquare className="h-4 w-4" />
-          Открыть чат с поддержкой
+          {isLoading ? "Открываем чат..." : "Открыть чат с поддержкой"}
         </Button>
       </div>
     </div>
@@ -105,7 +125,8 @@ const SupportContact = () => {
 
 /**
  * Help and Support page component
- * Displays FAQ and support contact options
+ * Main container that combines the FAQ and Support Contact sections
+ * @returns Complete Help page component
  */
 const Help = () => {
   return (
@@ -115,7 +136,7 @@ const Help = () => {
           Помощь и поддержка
         </h1>
         
-        {/* Support contact card */}
+        {/* Support contact section */}
         <SupportContact />
         
         {/* Frequently asked questions section */}
