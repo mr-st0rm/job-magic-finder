@@ -1,8 +1,7 @@
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { HelpCircle, Mail, MessageSquare } from "lucide-react";
+import { HelpCircle, MessageSquare } from "lucide-react";
 
 const Help = () => {
   return (
@@ -22,20 +21,10 @@ const Help = () => {
               Если у вас возникли вопросы или проблемы, напишите нам, и мы постараемся помочь вам как можно скорее.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button 
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <Mail className="h-4 w-4" />
-                Написать на email
-              </Button>
-              
-              <Button className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4" />
-                Открыть чат с поддержкой
-              </Button>
-            </div>
+            <Button className="flex items-center gap-2">
+              <MessageSquare className="h-4 w-4" />
+              Открыть чат с поддержкой
+            </Button>
           </div>
         </div>
         
@@ -45,10 +34,6 @@ const Help = () => {
             <h2 className="text-lg font-medium text-gray-900 dark:text-white">
               Часто задаваемые вопросы
             </h2>
-          </div>
-          
-          <div className="space-y-2 mb-4">
-            <Input placeholder="Поиск по вопросам..." />
           </div>
           
           <Accordion type="single" collapsible className="w-full">
