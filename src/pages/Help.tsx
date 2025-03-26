@@ -3,7 +3,22 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button";
 import { HelpCircle, MessageSquare } from "lucide-react";
 
+/**
+ * Help and Support page component
+ * Displays FAQ and support contact options
+ */
 const Help = () => {
+  /**
+   * Handler for opening support chat
+   * TODO: Implement actual chat functionality with support team
+   */
+  const handleOpenSupportChat = () => {
+    // This will be implemented when backend is available
+    console.log("Support chat requested");
+    // TODO: Connect to support chat API
+    // Expected response: { success: boolean, chatId: string }
+  };
+
   return (
     <div className="container-custom px-4">
       <section className="pt-6 pb-4">
@@ -11,6 +26,7 @@ const Help = () => {
           Помощь и поддержка
         </h1>
         
+        {/* Support contact card */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm mb-6">
           <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-3">
             Связаться с поддержкой
@@ -21,13 +37,17 @@ const Help = () => {
               Если у вас возникли вопросы или проблемы, напишите нам, и мы постараемся помочь вам как можно скорее.
             </p>
             
-            <Button className="flex items-center gap-2">
+            <Button 
+              className="flex items-center gap-2"
+              onClick={handleOpenSupportChat}
+            >
               <MessageSquare className="h-4 w-4" />
               Открыть чат с поддержкой
             </Button>
           </div>
         </div>
         
+        {/* Frequently asked questions section */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm mb-6">
           <div className="flex items-center gap-2 mb-4">
             <HelpCircle className="h-5 w-5 text-primary" />
@@ -36,6 +56,7 @@ const Help = () => {
             </h2>
           </div>
           
+          {/* Accordion for FAQ items */}
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="item-1">
               <AccordionTrigger>Как создать вакансию?</AccordionTrigger>

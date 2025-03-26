@@ -16,23 +16,34 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
-// Extended job type for recruiter view
+/**
+ * Extended job type with additional fields for recruiter dashboard
+ */
 interface RecruiterJobStats extends JobListing {
-  views: number;
-  contactsViewed: number;
-  status: 'draft' | 'review' | 'published' | 'archived';
+  views: number;                               // Number of job views
+  contactsViewed: number;                      // Number of times contacts were viewed
+  status: 'draft' | 'review' | 'published' | 'archived';  // Current job status
 }
 
+/**
+ * MyJobs component - Recruiter dashboard for job management
+ */
 const MyJobs = () => {
+  // State
   const [jobs, setJobs] = useState<RecruiterJobStats[]>([]);
   const [filteredJobs, setFilteredJobs] = useState<RecruiterJobStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  
+  // Hooks
   const navigate = useNavigate();
   const { role } = useUser();
   const { toast } = useToast();
   
+  /**
+   * Load jobs on component mount and redirect if not a recruiter
+   */
   useEffect(() => {
     // Redirect if not a recruiter
     if (role !== 'recruiter') {
@@ -40,31 +51,47 @@ const MyJobs = () => {
       return;
     }
     
-    // TODO: Заменить на получение данных из API
+    // Load jobs data
+    fetchJobs();
+  }, [navigate, role]);
+
+  /**
+   * Fetch recruiter's jobs
+   * TODO: Replace with actual API call
+   * Expected request: GET /api/recruiter/jobs
+   * Expected response: { jobs: RecruiterJobStats[] }
+   */
+  const fetchJobs = () => {
     setLoading(true);
+    
+    // Simulate API call with timeout
     setTimeout(() => {
-      // Временное решение: добавляем статистику к существующим вакансиям
+      // Temporarily using existing jobs data with additional recruiter stats
       const userJobs = getRecentJobs().map((job, index) => ({
         ...job,
         views: Math.floor(Math.random() * 100) + 10,
         contactsViewed: Math.floor(Math.random() * 20) + 1,
         status: ['draft', 'review', 'published', 'archived', 'published'][index % 5] as 'draft' | 'review' | 'published' | 'archived'
       }));
+      
       setJobs(userJobs);
       setFilteredJobs(userJobs);
       setLoading(false);
     }, 500);
-  }, [navigate, role]);
+  };
 
+  /**
+   * Filter jobs when search query or status filter changes
+   */
   useEffect(() => {
     let filtered = jobs;
     
-    // Фильтр по статусу
+    // Filter by status
     if (statusFilter !== 'all') {
       filtered = filtered.filter(job => job.status === statusFilter);
     }
     
-    // Фильтр по поисковому запросу
+    // Filter by search query
     if (searchQuery.trim() !== '') {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(job => 
@@ -77,6 +104,9 @@ const MyJobs = () => {
     setFilteredJobs(filtered);
   }, [searchQuery, statusFilter, jobs]);
 
+  /**
+   * Get human-readable status label
+   */
   const getStatusLabel = (status: string) => {
     switch(status) {
       case 'draft': return 'Черновик';
@@ -87,6 +117,9 @@ const MyJobs = () => {
     }
   };
   
+  /**
+   * Get CSS classes for status badge
+   */
   const getStatusColor = (status: string) => {
     switch(status) {
       case 'draft': return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300';
@@ -97,6 +130,9 @@ const MyJobs = () => {
     }
   };
   
+  /**
+   * Get icon for status badge
+   */
   const getStatusIcon = (status: string) => {
     switch(status) {
       case 'draft': return <Clock className="h-3 w-3 mr-1" />;
@@ -107,21 +143,31 @@ const MyJobs = () => {
     }
   };
   
+  /**
+   * Update job status
+   * TODO: Replace with actual API call
+   * Expected request: PUT /api/jobs/{id}/status { status: string }
+   * Expected response: { success: boolean, job: RecruiterJobStats }
+   */
   const updateJobStatus = (jobId: string, newStatus: 'draft' | 'review' | 'published' | 'archived') => {
-    // TODO: Заменить на отправку на API
+    // Update local state
     setJobs(prevJobs => 
       prevJobs.map(job => 
         job.id === jobId ? { ...job, status: newStatus } : job
       )
     );
     
+    // Show success message
     toast({
       title: "Статус обновлен",
       description: `Вакансия ${getStatusLabel(newStatus).toLowerCase()}`,
       duration: 5000,
     });
+    
+    // TODO: Send API request to update status
   };
 
+  // Show loading spinner while data is being fetched
   if (loading) {
     return (
       <div className="container-custom px-4 py-8 flex justify-center">
@@ -132,7 +178,7 @@ const MyJobs = () => {
 
   return (
     <div className="container-custom px-4">
-      {/* Заголовок */}
+      {/* Header with create button */}
       <section className="pt-6 pb-4">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Мои вакансии</h1>
@@ -147,7 +193,7 @@ const MyJobs = () => {
         </div>
       </section>
 
-      {/* Фильтр и поиск */}
+      {/* Search and filter section */}
       <section className="py-2 mb-4">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
@@ -180,7 +226,7 @@ const MyJobs = () => {
         </div>
       </section>
 
-      {/* Список вакансий */}
+      {/* Jobs list */}
       <section className="py-2">
         {filteredJobs.length > 0 ? (
           <div className="grid gap-4 grid-cols-1">
@@ -192,7 +238,9 @@ const MyJobs = () => {
                   job.featured && "ring-2 ring-primary/20 bg-primary/5 dark:bg-primary/10"
                 )}
               >
+                {/* Job card header */}
                 <div className="flex items-start">
+                  {/* Company logo */}
                   <div className="w-12 h-12 rounded-md bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden mr-3">
                     {job.logo ? (
                       <img 
@@ -207,6 +255,7 @@ const MyJobs = () => {
                     )}
                   </div>
                   
+                  {/* Job details */}
                   <div className="flex-1">
                     <div className="flex justify-between items-start">
                       <h3 className="text-md font-medium text-gray-900 dark:text-white truncate mr-2">
@@ -225,6 +274,7 @@ const MyJobs = () => {
                       Опубликовано {job.postedAt}
                     </p>
                     
+                    {/* Stats counters */}
                     <div className="mt-3 grid grid-cols-2 gap-2">
                       <div className="flex flex-col items-center py-2 px-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         <div className="flex items-center gap-1">
@@ -245,8 +295,10 @@ const MyJobs = () => {
                   </div>
                 </div>
                 
+                {/* Action buttons */}
                 <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                   <div className="flex flex-col gap-2">
+                    {/* Primary action based on job status */}
                     <div>
                       {job.status === 'published' && (
                         <Button 
@@ -285,6 +337,7 @@ const MyJobs = () => {
                       )}
                     </div>
                     
+                    {/* Secondary actions */}
                     <div className="grid grid-cols-2 gap-2">
                       <Button 
                         variant="ghost" 
@@ -312,6 +365,7 @@ const MyJobs = () => {
             ))}
           </div>
         ) : (
+          // Empty state
           <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm text-center">
             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <PlusCircle className="h-8 w-8 text-primary" />

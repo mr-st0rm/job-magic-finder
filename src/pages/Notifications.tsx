@@ -4,6 +4,9 @@ import { BellRing, CircleEllipsis, User, Mail, Eye } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 
+/**
+ * Notification data type
+ */
 type Notification = {
   id: string;
   title: string;
@@ -13,15 +16,34 @@ type Notification = {
   type: 'message' | 'view' | 'application' | 'system';
 };
 
+/**
+ * Notifications page component
+ * Shows user notifications and notification settings
+ */
 const Notifications = () => {
+  // State
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(true);
   
+  /**
+   * Fetch notifications on component mount
+   */
   useEffect(() => {
-    // TODO: Заменить на получение данных из API
+    fetchNotifications();
+  }, []);
+
+  /**
+   * Fetch notifications from API
+   * TODO: Replace with actual API call
+   * Expected request: GET /api/notifications
+   * Expected response: { notifications: Notification[] }
+   */
+  const fetchNotifications = () => {
     setLoading(true);
+    
+    // Simulate API call with timeout
     setTimeout(() => {
       const sampleNotifications: Notification[] = [
         {
@@ -52,8 +74,11 @@ const Notifications = () => {
       setNotifications(sampleNotifications);
       setLoading(false);
     }, 500);
-  }, []);
+  };
 
+  /**
+   * Get icon for notification based on type
+   */
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'message':
@@ -67,10 +92,35 @@ const Notifications = () => {
     }
   };
   
+  /**
+   * Mark all notifications as read
+   * TODO: Connect to API
+   * Expected request: PUT /api/notifications/read-all
+   * Expected response: { success: boolean }
+   */
   const markAllAsRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    
+    // TODO: Send API request to mark all as read
   };
   
+  /**
+   * Update notification settings
+   * TODO: Connect to API
+   * Expected request: PUT /api/notifications/settings { email: boolean, push: boolean }
+   * Expected response: { success: boolean, settings: { email: boolean, push: boolean } }
+   */
+  const updateNotificationSettings = (type: 'email' | 'push', value: boolean) => {
+    if (type === 'email') {
+      setEmailNotifications(value);
+    } else {
+      setPushNotifications(value);
+    }
+    
+    // TODO: Send API request to update settings
+  };
+  
+  // Show loading spinner while data is being fetched
   if (loading) {
     return (
       <div className="container-custom px-4 py-8 flex justify-center">
@@ -82,6 +132,7 @@ const Notifications = () => {
   return (
     <div className="container-custom px-4">
       <section className="pt-6 pb-4">
+        {/* Header with mark all as read button */}
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
             Уведомления
@@ -97,6 +148,7 @@ const Notifications = () => {
           )}
         </div>
 
+        {/* Notification settings */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm mb-4">
           <h3 className="font-medium text-gray-900 dark:text-white mb-3">
             Настройки уведомлений
@@ -109,7 +161,7 @@ const Notifications = () => {
               </span>
               <Switch 
                 checked={emailNotifications} 
-                onCheckedChange={setEmailNotifications} 
+                onCheckedChange={(value) => updateNotificationSettings('email', value)}
               />
             </div>
             
@@ -119,12 +171,13 @@ const Notifications = () => {
               </span>
               <Switch 
                 checked={pushNotifications} 
-                onCheckedChange={setPushNotifications} 
+                onCheckedChange={(value) => updateNotificationSettings('push', value)}
               />
             </div>
           </div>
         </div>
         
+        {/* Notification list */}
         {notifications.length > 0 ? (
           <div className="space-y-3">
             {notifications.map((notification) => (
@@ -152,6 +205,7 @@ const Notifications = () => {
             ))}
           </div>
         ) : (
+          // Empty state
           <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm text-center">
             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <BellRing className="h-8 w-8 text-primary" />

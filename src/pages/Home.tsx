@@ -7,11 +7,18 @@ import { CircleEllipsis } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import SearchForm from '@/components/SearchForm';
 
+/**
+ * Home page component
+ * Shows different job listings based on user role and preferences
+ */
 const Home = () => {
+  // State for job listings
   const [featuredJobs, setFeaturedJobs] = useState<JobListing[]>([]);
   const [recommendedJobs, setRecommendedJobs] = useState<JobListing[]>([]);
   const [recentJobs, setRecentJobs] = useState<JobListing[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Hooks
   const navigate = useNavigate();
   const { role } = useUser();
 
@@ -21,17 +28,33 @@ const Home = () => {
       navigate('/my-jobs');
       return;
     }
+    
+    // Fetch job data
+    loadJobData();
+  }, [navigate, role]);
 
-    // TODO: Заменить на получение данных из API
+  /**
+   * Load job data from API or mock data
+   */
+  const loadJobData = () => {
     setLoading(true);
+    
+    // TODO: Replace with actual API calls
+    // Expected API endpoints:
+    // GET /api/jobs/featured - Expected response: { jobs: JobListing[] }
+    // GET /api/jobs/recommended - Expected response: { jobs: JobListing[] }
+    // GET /api/jobs/recent - Expected response: { jobs: JobListing[] }
+    
+    // Using setTimeout to simulate API delay
     setTimeout(() => {
       setFeaturedJobs(getFeaturedJobs());
       setRecommendedJobs(getRecommendedJobs());
       setRecentJobs(getRecentJobs());
       setLoading(false);
     }, 500);
-  }, [navigate, role]);
+  };
 
+  // Show loading spinner while data is being fetched
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[calc(100vh-8rem)]">
@@ -42,12 +65,12 @@ const Home = () => {
 
   return (
     <div className="container-custom px-4">
-      {/* Поиск */}
+      {/* Search section */}
       <section className="pt-6 pb-6">
         <SearchForm className="w-full" />
       </section>
 
-      {/* Рекомендуемые вакансии */}
+      {/* Recommended jobs section */}
       <section className="py-4">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
           Рекомендуемые вакансии
@@ -60,7 +83,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Выделенные вакансии */}
+      {/* Featured jobs section */}
       <section className="py-4">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
           Выделенные вакансии
@@ -73,7 +96,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Новые вакансии */}
+      {/* Recent jobs section */}
       <section className="py-4 mb-4">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
           Новые вакансии

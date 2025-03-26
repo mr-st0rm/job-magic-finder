@@ -20,34 +20,72 @@ import { getJobById, JobListing } from '@/data/jobs';
 import { useToast } from '@/components/ui/use-toast';
 import { useUser } from '@/contexts/UserContext';
 
+/**
+ * Job Detail Page Component
+ * Shows detailed information about a specific job listing
+ */
 const JobDetail = () => {
+  // Get job ID from URL params
   const { id } = useParams<{ id: string }>();
+  
+  // State
   const [job, setJob] = useState<JobListing | null>(null);
   const [loading, setLoading] = useState(true);
   const [contactsVisible, setContactsVisible] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  
+  // Hooks
   const navigate = useNavigate();
   const { toast } = useToast();
   const { role } = useUser();
 
+  /**
+   * Fetch job details when component mounts or ID changes
+   */
   useEffect(() => {
-    // TODO: Заменить на получение данных из API
+    fetchJobDetails();
+  }, [id]);
+
+  /**
+   * Fetch job details from API
+   * TODO: Replace with actual API call
+   * Expected request: GET /api/jobs/{id}
+   * Expected response: { job: JobListing }
+   */
+  const fetchJobDetails = () => {
     setLoading(true);
+    
+    // Simulate API call with timeout
     setTimeout(() => {
       if (id) {
         const jobData = getJobById(id);
         if (jobData) {
           setJob(jobData);
-          // TODO: Отправить запрос на сервер для учета просмотра
-          console.log('Просмотр вакансии id:', id);
+          
+          // Track job view
+          trackJobView(id);
         }
       }
       setLoading(false);
     }, 300);
-  }, [id]);
+  };
 
+  /**
+   * Track that user viewed this job
+   * TODO: Implement actual tracking via API
+   * Expected request: POST /api/jobs/{id}/view
+   * Expected response: { success: boolean }
+   */
+  const trackJobView = (jobId: string) => {
+    console.log('Просмотр вакансии id:', jobId);
+    // TODO: Send API request to track view
+  };
+
+  /**
+   * Share job with others
+   * Uses Web Share API if available, otherwise copies link
+   */
   const handleShare = () => {
-    // TODO: Реализовать функционал "Поделиться"
     if (navigator.share) {
       navigator.share({
         title: job?.title,
@@ -56,6 +94,8 @@ const JobDetail = () => {
       })
       .catch(error => console.log('Ошибка при попытке поделиться', error));
     } else {
+      // Fallback - copy to clipboard
+      navigator.clipboard.writeText(window.location.href);
       toast({
         title: 'Ссылка скопирована',
         description: 'Теперь вы можете поделиться ей'
@@ -63,21 +103,38 @@ const JobDetail = () => {
     }
   };
 
+  /**
+   * Toggle favorite status for this job
+   * TODO: Implement actual API integration
+   * Expected request: POST /api/jobs/{id}/favorite (or DELETE to remove)
+   * Expected response: { success: boolean, isFavorite: boolean }
+   */
   const toggleFavorite = () => {
     setIsFavorite(!isFavorite);
+    
     toast({
       title: isFavorite ? 'Удалено из избранного' : 'Добавлено в избранное',
       description: isFavorite ? 'Вакансия удалена из избранного' : 'Вакансия добавлена в избранное'
     });
-    // TODO: Отправить запрос на сервер для сохранения в избранное
+    
+    // TODO: Send API request to add/remove from favorites
   };
 
+  /**
+   * Show recruiter contact details and track this action
+   * TODO: Implement actual API integration
+   * Expected request: POST /api/jobs/{id}/contacts-viewed
+   * Expected response: { success: boolean, contacts: { phone, email, telegram } }
+   */
   const showContacts = () => {
     setContactsVisible(true);
-    // TODO: Отправить на сервер статистику просмотра контактов
+    
+    // Track contact view
     console.log('Просмотр контактов для вакансии id:', id);
+    // TODO: Send API request to track contact view
   };
 
+  // Show loading spinner while data is being fetched
   if (loading) {
     return (
       <div className="container-custom px-4 py-8 flex justify-center">
@@ -86,6 +143,7 @@ const JobDetail = () => {
     );
   }
 
+  // Show not found message if job doesn't exist
   if (!job) {
     return (
       <div className="container-custom px-4 py-8">
@@ -102,10 +160,11 @@ const JobDetail = () => {
 
   return (
     <div className="container-custom px-4">
-      {/* Шапка вакансии */}
+      {/* Job header */}
       <section className="pt-6 pb-4">
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
           <div className="flex items-start">
+            {/* Company logo */}
             <div className="w-16 h-16 rounded overflow-hidden flex-shrink-0 mr-4 bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
               <img 
                 src={job.logo || '/placeholder.svg'} 
@@ -116,10 +175,13 @@ const JobDetail = () => {
                 }}
               />
             </div>
+            
+            {/* Job title and company */}
             <div className="flex-1">
               <h1 className="text-xl font-semibold text-gray-900 dark:text-white">{job.title}</h1>
               <p className="text-gray-600 dark:text-gray-400">{job.company}</p>
               
+              {/* Job metadata */}
               <div className="flex flex-wrap gap-2 mt-3">
                 <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                   <MapPin className="h-4 w-4 mr-1" />
@@ -135,6 +197,7 @@ const JobDetail = () => {
                 </div>
               </div>
               
+              {/* Salary */}
               <div className="mt-4">
                 <div className="text-lg font-medium text-gray-900 dark:text-white">
                   {job.salary}
@@ -145,9 +208,10 @@ const JobDetail = () => {
         </div>
       </section>
 
-      {/* Действия с вакансией */}
+      {/* Job actions */}
       <section className="py-2">
         {role !== 'recruiter' ? (
+          // Actions for job seekers
           <div className="grid grid-cols-2 gap-3">
             <Button 
               onClick={toggleFavorite} 
@@ -167,6 +231,7 @@ const JobDetail = () => {
             </Button>
           </div>
         ) : (
+          // Actions for recruiters
           <div className="grid grid-cols-2 gap-3">
             {job.id && (
               <Button 
@@ -190,7 +255,7 @@ const JobDetail = () => {
         )}
       </section>
 
-      {/* Описание вакансии */}
+      {/* Job description */}
       <section className="py-4">
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm space-y-4">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Описание</h2>
@@ -198,6 +263,7 @@ const JobDetail = () => {
             {job.description}
           </p>
           
+          {/* Requirements */}
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mt-6">Требования</h2>
           <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300">
             {job.requirements.map((req, index) => (
@@ -208,6 +274,7 @@ const JobDetail = () => {
             ))}
           </ul>
           
+          {/* Responsibilities */}
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mt-6">Обязанности</h2>
           <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300">
             {job.responsibilities.map((resp, index) => (
@@ -220,7 +287,7 @@ const JobDetail = () => {
         </div>
       </section>
 
-      {/* О компании */}
+      {/* Company information */}
       <section className="py-2">
         <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">О компании</h2>
@@ -257,13 +324,14 @@ const JobDetail = () => {
         </div>
       </section>
 
-      {/* Контакты для связи */}
+      {/* Contact information - only for job seekers */}
       {role !== 'recruiter' && (
         <section className="py-2 mb-6">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Контакты</h2>
             
             {contactsVisible ? (
+              // Show contacts when user clicks the button
               <div className="space-y-3">
                 <div className="flex items-center">
                   <Phone className="h-5 w-5 text-gray-500 mr-3" />
@@ -290,6 +358,7 @@ const JobDetail = () => {
                 </div>
               </div>
             ) : (
+              // Button to reveal contacts
               <Button 
                 onClick={showContacts} 
                 className="w-full"
