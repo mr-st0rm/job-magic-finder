@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useToast } from "@/hooks/use-toast";
 
@@ -8,19 +7,29 @@ import { useToast } from "@/hooks/use-toast";
 export type UserRole = 'applicant' | 'recruiter';
 
 /**
- * User authentication result interface
- * Used for typing the response from authentication API calls
+ * Telegram user data interface
+ * Represents the data from Telegram's WebApp initData
  */
-interface AuthResult {
-  success: boolean;
-  user?: {
-    id: string;
-    email: string;
-    role: UserRole;
-    name?: string;
-  };
-  token?: string;
-  error?: string;
+interface TelegramUserData {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  language_code?: string;
+  photo_url?: string;
+  // Add additional fields as needed according to Telegram's WebApp documentation
+}
+
+/**
+ * Telegram WebApp init data interface
+ * Represents the parsed initData from Telegram WebApp
+ */
+interface TelegramInitData {
+  user?: TelegramUserData;
+  auth_date?: number;
+  hash?: string;
+  query_id?: string;
+  // Add additional fields as needed according to Telegram's WebApp documentation
 }
 
 /**
@@ -28,11 +37,13 @@ interface AuthResult {
  * This defines what components can access from the context
  */
 interface UserContextType {
-  role: UserRole;                // Current user role
-  toggleRole: () => void;        // Function to switch between roles
-  isAuthenticated: boolean;      // Authentication state
-  login: () => void;             // Login function
-  logout: () => void;            // Logout function
+  role: UserRole;                         // Current user role
+  toggleRole: () => void;                 // Function to switch between roles
+  isAuthenticated: boolean;               // Authentication state (via Telegram)
+  telegramUser: TelegramUserData | null;  // Telegram user data
+  telegramInitData: string | null;        // Raw initData from Telegram
+  parsedInitData: TelegramInitData | null; // Parsed initData object
+  setTelegramInitData: (data: string) => void; // Function to set telegram initData
 }
 
 // Create the context with undefined initial value
@@ -52,8 +63,83 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     return (savedRole as UserRole) || 'applicant';
   });
   
-  // TODO: Replace with actual auth logic - currently always authenticated for demo
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  // Telegram data states
+  const [telegramInitData, setTelegramInitData] = useState<string | null>(null);
+  const [parsedInitData, setParsedInitData] = useState<TelegramInitData | null>(null);
+  const [telegramUser, setTelegramUser] = useState<TelegramUserData | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // Parse initData when it changes
+  useEffect(() => {
+    if (telegramInitData) {
+      try {
+        // Telegram sends data as URL-encoded string
+        const searchParams = new URLSearchParams(telegramInitData);
+        const userData = searchParams.get('user');
+        
+        // Create a parsed data object
+        const parsed: TelegramInitData = {
+          auth_date: Number(searchParams.get('auth_date') || 0),
+          hash: searchParams.get('hash') || undefined,
+          query_id: searchParams.get('query_id') || undefined,
+        };
+        
+        // Parse the user data if present
+        if (userData) {
+          const user = JSON.parse(userData) as TelegramUserData;
+          parsed.user = user;
+          setTelegramUser(user);
+          setIsAuthenticated(true);
+          
+          // You can use Telegram user data to determine role if needed
+          // For example, checking against a list of recruiter IDs
+          // For now, we keep the role selection functionality
+        }
+        
+        setParsedInitData(parsed);
+        
+        // Store in localStorage for persistence
+        localStorage.setItem('telegramInitData', telegramInitData);
+        
+        toast({
+          title: "Telegram данные получены",
+          description: `Привет, ${parsed.user?.first_name || 'пользователь'}!`,
+        });
+        
+        // TODO: Send initData to backend for validation (important for security)
+        // This would validate that the request is actually coming from Telegram
+        // Expected request: POST /api/telegram/validate { initData: telegramInitData }
+        // Expected response: { valid: boolean, user?: { id, name, ... } }
+        
+      } catch (error) {
+        console.error('Failed to parse Telegram initData:', error);
+        toast({
+          title: "Ошибка авторизации",
+          description: "Не удалось обработать данные из Telegram",
+          variant: "destructive",
+        });
+      }
+    }
+  }, [telegramInitData, toast]);
+
+  // Try to restore Telegram data from localStorage on initial load
+  useEffect(() => {
+    const savedInitData = localStorage.getItem('telegramInitData');
+    if (savedInitData) {
+      setTelegramInitData(savedInitData);
+    }
+    
+    // Setup Telegram WebApp if it's available
+    if (window.Telegram?.WebApp) {
+      // Initialize Telegram WebApp
+      window.Telegram.WebApp.ready();
+      
+      // If initData is not provided manually, get it from WebApp
+      if (!telegramInitData && window.Telegram.WebApp.initData) {
+        setTelegramInitData(window.Telegram.WebApp.initData);
+      }
+    }
+  }, [telegramInitData]);
 
   /**
    * Toggle between applicant and recruiter roles
@@ -70,45 +156,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     });
     
     // TODO: Connect to API to update user role preference
-    // Expected request: PUT /api/users/preferences { role: newRole }
+    // Expected request: PUT /api/users/preferences { userId: telegramUser?.id, role: newRole }
     // Expected response: { success: boolean, user: { role: string, ... } }
-  };
-
-  // Save role to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('userRole', role);
-  }, [role]);
-
-  /**
-   * Log user in
-   * In a real implementation, this would make an API call with credentials
-   */
-  const login = () => {
-    // TODO: Implement actual authentication with API
-    // Expected request: POST /api/auth/login { email, password }
-    // Expected response: { success: boolean, token: string, user: { id, email, role, ... } }
-    
-    setIsAuthenticated(true);
-    toast({
-      title: "Успешный вход",
-      description: "Вы успешно вошли в систему",
-    });
-  };
-
-  /**
-   * Log user out
-   * Clears authentication state and could call an API to invalidate the session
-   */
-  const logout = () => {
-    // TODO: Implement actual logout with API
-    // Expected request: POST /api/auth/logout
-    // Expected response: { success: boolean }
-    
-    setIsAuthenticated(false);
-    toast({
-      title: "Выход из системы",
-      description: "Вы вышли из системы",
-    });
   };
 
   // Context value that will be provided to consumers
@@ -116,8 +165,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     role,
     toggleRole,
     isAuthenticated,
-    login,
-    logout
+    telegramUser,
+    telegramInitData,
+    parsedInitData,
+    setTelegramInitData
   };
 
   return (
@@ -140,3 +191,17 @@ export const useUser = (): UserContextType => {
   }
   return context;
 };
+
+// Add TypeScript declaration for Telegram WebApp
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp?: {
+        ready: () => void;
+        initData: string;
+        initDataUnsafe?: any;
+        // Add more Telegram WebApp methods as needed
+      };
+    };
+  }
+}
