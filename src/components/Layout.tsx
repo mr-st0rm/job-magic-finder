@@ -1,9 +1,10 @@
 
 import { ReactNode, useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Moon, Sun, Home, Search, User, Plus } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Home, Search, User, Sparkles } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface LayoutProps {
   children: ReactNode;
@@ -20,6 +21,7 @@ const Layout = ({ children }: LayoutProps) => {
   // Hooks for navigation
   const navigate = useNavigate();
   const location = useLocation();
+  const isMobile = useIsMobile();
   
   // Get user role from context
   const { role } = useUser();
@@ -114,7 +116,7 @@ const Layout = ({ children }: LayoutProps) => {
         {children}
       </main>
 
-      {/* Bottom navigation bar */}
+      {/* Bottom navigation bar - Updated to match the design in the screenshot */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
         <div className="grid grid-cols-3 h-16">
           {/* Home/Jobs button */}
@@ -122,40 +124,26 @@ const Layout = ({ children }: LayoutProps) => {
             variant="ghost"
             className="flex flex-col items-center justify-center rounded-none h-full"
             onClick={() => navigate('/')}
-            aria-label={role === 'recruiter' ? "My jobs" : "Jobs"}
+            aria-label="Vacancies"
           >
             <Home className={`h-5 w-5 ${location.pathname === '/' ? 'text-primary' : ''}`} />
             <span className={`text-xs mt-1 ${location.pathname === '/' ? 'text-primary' : ''}`}>
-              {role === 'recruiter' ? 'Мои вакансии' : 'Вакансии'}
+              Вакансии
             </span>
           </Button>
 
-          {/* Middle button - Create for recruiter, Search for applicant */}
-          {role === 'recruiter' ? (
-            <Button
-              variant="ghost"
-              className="flex flex-col items-center justify-center rounded-none h-full"
-              onClick={() => navigate('/create-job')}
-              aria-label="Create job"
-            >
-              <Plus className={`h-5 w-5 ${location.pathname === '/create-job' ? 'text-primary' : ''}`} />
-              <span className={`text-xs mt-1 ${location.pathname === '/create-job' ? 'text-primary' : ''}`}>
-                Создать
-              </span>
-            </Button>
-          ) : (
-            <Button
-              variant="ghost"
-              className="flex flex-col items-center justify-center rounded-none h-full"
-              onClick={() => navigate('/search')}
-              aria-label="Search jobs"
-            >
-              <Search className={`h-5 w-5 ${location.pathname === '/search' ? 'text-primary' : ''}`} />
-              <span className={`text-xs mt-1 ${location.pathname === '/search' ? 'text-primary' : ''}`}>
-                Поиск
-              </span>
-            </Button>
-          )}
+          {/* Search button */}
+          <Button
+            variant="ghost"
+            className="flex flex-col items-center justify-center rounded-none h-full"
+            onClick={() => navigate('/search')}
+            aria-label="Search"
+          >
+            <Search className={`h-5 w-5 ${location.pathname === '/search' ? 'text-primary' : ''}`} />
+            <span className={`text-xs mt-1 ${location.pathname === '/search' ? 'text-primary' : ''}`}>
+              Поиск
+            </span>
+          </Button>
 
           {/* Profile button */}
           <Button
