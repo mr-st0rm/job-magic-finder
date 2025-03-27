@@ -198,6 +198,7 @@ declare global {
     Telegram?: {
       WebApp?: {
         ready: () => void;
+        expand: () => void;  // Add the missing expand method
         initData: string;
         initDataUnsafe?: any;
         // Add more Telegram WebApp methods as needed
