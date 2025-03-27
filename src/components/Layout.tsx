@@ -1,6 +1,6 @@
 
 import { ReactNode, useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { ArrowLeft, Moon, Sun, Home, Search, User, Sparkles } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import { Button } from '@/components/ui/button';
@@ -116,47 +116,35 @@ const Layout = ({ children }: LayoutProps) => {
         {children}
       </main>
 
-      {/* Bottom navigation bar - Updated to match the design in the screenshot */}
+      {/* Bottom navigation bar - Fixed to use direct links instead of buttons */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
         <div className="grid grid-cols-3 h-16">
-          {/* Home/Jobs button */}
-          <Button
-            variant="ghost"
-            className="flex flex-col items-center justify-center rounded-none h-full"
-            onClick={() => navigate('/')}
-            aria-label="Vacancies"
+          {/* Home tab */}
+          <Link 
+            to="/"
+            className={`flex flex-col items-center justify-center h-full ${location.pathname === '/' ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}
           >
-            <Home className={`h-5 w-5 ${location.pathname === '/' ? 'text-primary' : ''}`} />
-            <span className={`text-xs mt-1 ${location.pathname === '/' ? 'text-primary' : ''}`}>
-              Вакансии
-            </span>
-          </Button>
+            <Home className="h-5 w-5" />
+            <span className="text-xs mt-1">Вакансии</span>
+          </Link>
 
-          {/* Search button */}
-          <Button
-            variant="ghost"
-            className="flex flex-col items-center justify-center rounded-none h-full"
-            onClick={() => navigate('/search')}
-            aria-label="Search"
+          {/* Search tab */}
+          <Link 
+            to="/search"
+            className={`flex flex-col items-center justify-center h-full ${location.pathname === '/search' ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}
           >
-            <Search className={`h-5 w-5 ${location.pathname === '/search' ? 'text-primary' : ''}`} />
-            <span className={`text-xs mt-1 ${location.pathname === '/search' ? 'text-primary' : ''}`}>
-              Поиск
-            </span>
-          </Button>
+            <Search className="h-5 w-5" />
+            <span className="text-xs mt-1">Поиск</span>
+          </Link>
 
-          {/* Profile button */}
-          <Button
-            variant="ghost"
-            className="flex flex-col items-center justify-center rounded-none h-full"
-            onClick={() => navigate('/profile')}
-            aria-label="Profile"
+          {/* Profile tab */}
+          <Link 
+            to="/profile"
+            className={`flex flex-col items-center justify-center h-full ${location.pathname === '/profile' ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}
           >
-            <User className={`h-5 w-5 ${location.pathname === '/profile' ? 'text-primary' : ''}`} />
-            <span className={`text-xs mt-1 ${location.pathname === '/profile' ? 'text-primary' : ''}`}>
-              Профиль
-            </span>
-          </Button>
+            <User className="h-5 w-5" />
+            <span className="text-xs mt-1">Профиль</span>
+          </Link>
         </div>
       </nav>
     </div>
