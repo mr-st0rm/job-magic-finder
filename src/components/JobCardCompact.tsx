@@ -58,7 +58,7 @@ export const JobCardCompact = ({ job, compact = false }: JobCardCompactProps) =>
       )}
       onClick={handleClick}
     >
-      {isFeatured && (
+      {job.recommended && (
         <div className="absolute top-2 right-2 z-10">
           <span className="inline-flex items-center rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
             <Sparkles className="mr-1 h-3 w-3" />
@@ -80,7 +80,13 @@ export const JobCardCompact = ({ job, compact = false }: JobCardCompactProps) =>
           />
         </div>
         <div className="flex-1">
-          <h3 className="font-medium text-gray-900 dark:text-white">{job.title}</h3>
+          {/* Add margin top when job is recommended to avoid overlap */}
+          <h3 className={cn(
+            "font-medium text-gray-900 dark:text-white",
+            job.recommended ? "mt-6 xs:mt-4 sm:mt-0 md:mt-0" : "mt-0" // Add margin top on mobile when recommended
+          )}>
+            {job.title}
+          </h3>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{job.company}</p>
           
           <div className="flex flex-wrap gap-2 mt-2">

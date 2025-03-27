@@ -131,7 +131,12 @@ export const JobCard = ({ job, featured = false, className, compact = false }: J
           </div>
           
           <div className="flex-1 min-w-0">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors duration-200 pr-24 md:pr-24 sm:pr-24 xs:pr-0">
+            {/* Fix for mobile badge/title overlap: Add top margin to push title down when badge is present */}
+            <h3 className={cn(
+              "text-lg font-medium text-gray-900 dark:text-white truncate group-hover:text-primary transition-colors duration-200",
+              isRecommended ? "mt-6 xs:mt-4 sm:mt-0 md:mt-0" : "mt-0", // Add margin top on mobile when recommended
+              "pr-12 sm:pr-16 md:pr-24" // Ensure right padding for badge space
+            )}>
               {job.title}
             </h3>
             
