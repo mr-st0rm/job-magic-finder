@@ -116,8 +116,8 @@ const Layout = ({ children }: LayoutProps) => {
         {children}
       </main>
 
-      {/* Bottom navigation bar - Fixed to use direct links instead of buttons */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+      {/* Bottom navigation bar - Increased z-index to appear above other content */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50">
         <div className="grid grid-cols-3 h-16">
           {/* Home tab */}
           <Link 
