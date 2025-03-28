@@ -1,4 +1,3 @@
-
 import { ReactNode, useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { ArrowLeft, Moon, Sun, Home, Search, User, Sparkles, BriefcaseBusiness, PlusCircle } from 'lucide-react';
@@ -121,15 +120,6 @@ const Layout = ({ children }: LayoutProps) => {
         <div className="grid grid-cols-3 h-16">
           {role === 'recruiter' ? (
             <>
-              {/* Home tab - Recruiter */}
-              <Link 
-                to="/"
-                className={`flex flex-col items-center justify-center h-full ${location.pathname === '/' ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}
-              >
-                <Home className="h-5 w-5" />
-                <span className="text-xs mt-1">Главная</span>
-              </Link>
-
               {/* My Jobs tab - Recruiter */}
               <Link 
                 to="/my-jobs"
@@ -146,6 +136,15 @@ const Layout = ({ children }: LayoutProps) => {
               >
                 <PlusCircle className="h-5 w-5" />
                 <span className="text-xs mt-1">Создать</span>
+              </Link>
+
+              {/* Profile tab - Recruiter */}
+              <Link 
+                to="/profile"
+                className={`flex flex-col items-center justify-center h-full ${location.pathname === '/profile' ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}
+              >
+                <User className="h-5 w-5" />
+                <span className="text-xs mt-1">Профиль</span>
               </Link>
             </>
           ) : (
