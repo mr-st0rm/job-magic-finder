@@ -1,7 +1,7 @@
 
 import { ReactNode, useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { ArrowLeft, Moon, Sun, Home, Search, User, Sparkles } from 'lucide-react';
+import { ArrowLeft, Moon, Sun, Home, Search, User, Sparkles, BriefcaseBusiness, PlusCircle } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -116,35 +116,68 @@ const Layout = ({ children }: LayoutProps) => {
         {children}
       </main>
 
-      {/* Bottom navigation bar - Increased z-index to appear above other content */}
+      {/* Bottom navigation bar - Different for recruiter and applicant roles */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50">
         <div className="grid grid-cols-3 h-16">
-          {/* Home tab */}
-          <Link 
-            to="/"
-            className={`flex flex-col items-center justify-center h-full ${location.pathname === '/' ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}
-          >
-            <Home className="h-5 w-5" />
-            <span className="text-xs mt-1">Вакансии</span>
-          </Link>
+          {role === 'recruiter' ? (
+            <>
+              {/* Home tab - Recruiter */}
+              <Link 
+                to="/"
+                className={`flex flex-col items-center justify-center h-full ${location.pathname === '/' ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}
+              >
+                <Home className="h-5 w-5" />
+                <span className="text-xs mt-1">Главная</span>
+              </Link>
 
-          {/* Search tab */}
-          <Link 
-            to="/search"
-            className={`flex flex-col items-center justify-center h-full ${location.pathname === '/search' ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}
-          >
-            <Search className="h-5 w-5" />
-            <span className="text-xs mt-1">Поиск</span>
-          </Link>
+              {/* My Jobs tab - Recruiter */}
+              <Link 
+                to="/my-jobs"
+                className={`flex flex-col items-center justify-center h-full ${location.pathname === '/my-jobs' ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}
+              >
+                <BriefcaseBusiness className="h-5 w-5" />
+                <span className="text-xs mt-1">Мои вакансии</span>
+              </Link>
 
-          {/* Profile tab */}
-          <Link 
-            to="/profile"
-            className={`flex flex-col items-center justify-center h-full ${location.pathname === '/profile' ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}
-          >
-            <User className="h-5 w-5" />
-            <span className="text-xs mt-1">Профиль</span>
-          </Link>
+              {/* Create Job tab - Recruiter */}
+              <Link 
+                to="/create-job"
+                className={`flex flex-col items-center justify-center h-full ${location.pathname === '/create-job' ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}
+              >
+                <PlusCircle className="h-5 w-5" />
+                <span className="text-xs mt-1">Создать</span>
+              </Link>
+            </>
+          ) : (
+            <>
+              {/* Home tab - Applicant */}
+              <Link 
+                to="/"
+                className={`flex flex-col items-center justify-center h-full ${location.pathname === '/' ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}
+              >
+                <Home className="h-5 w-5" />
+                <span className="text-xs mt-1">Вакансии</span>
+              </Link>
+
+              {/* Search tab - Applicant */}
+              <Link 
+                to="/search"
+                className={`flex flex-col items-center justify-center h-full ${location.pathname === '/search' ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}
+              >
+                <Search className="h-5 w-5" />
+                <span className="text-xs mt-1">Поиск</span>
+              </Link>
+
+              {/* Profile tab - Applicant */}
+              <Link 
+                to="/profile"
+                className={`flex flex-col items-center justify-center h-full ${location.pathname === '/profile' ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}
+              >
+                <User className="h-5 w-5" />
+                <span className="text-xs mt-1">Профиль</span>
+              </Link>
+            </>
+          )}
         </div>
       </nav>
     </div>
