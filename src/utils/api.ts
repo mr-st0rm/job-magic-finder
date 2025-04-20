@@ -11,12 +11,12 @@ export const createApiClient = () => {
   const fetcher = async (endpoint: string, options: FetchOptions = {}) => {
     const { params, headers = {}, ...rest } = options;
     
-    // Add Telegram initData to headers if available
+    // Всегда добавляем актуальный telegramInitData в headers
     if (telegramInitData) {
       headers['X-Auth'] = telegramInitData;
     }
 
-    // Build URL with query parameters
+    // Построение URL с параметрами
     const url = new URL(endpoint, process.env.VITE_API_URL || 'http://localhost:3000');
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
