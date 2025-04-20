@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useToast } from "@/hooks/use-toast";
+import TelegramAuthRequired from '@/components/TelegramAuthRequired';
 
 /**
  * User role types - defines the possible roles a user can have
@@ -37,13 +38,13 @@ interface TelegramInitData {
  * This defines what components can access from the context
  */
 interface UserContextType {
-  role: UserRole;                         // Current user role
-  toggleRole: () => void;                 // Function to switch between roles
-  isAuthenticated: boolean;               // Authentication state (via Telegram)
-  telegramUser: TelegramUserData | null;  // Telegram user data
-  telegramInitData: string | null;        // Raw initData from Telegram
-  parsedInitData: TelegramInitData | null; // Parsed initData object
-  setTelegramInitData: (data: string) => void; // Function to set telegram initData
+  role: UserRole;
+  toggleRole: () => void;
+  isAuthenticated: boolean;
+  telegramUser: TelegramUserData | null;
+  telegramInitData: string | null;
+  parsedInitData: TelegramInitData | null;
+  authHeader: string | null;
 }
 
 // Create the context with undefined initial value
@@ -69,47 +70,52 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [telegramUser, setTelegramUser] = useState<TelegramUserData | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // Initialize Telegram WebApp and get initData
+  useEffect(() => {
+    const savedInitData = localStorage.getItem('telegramInitData');
+    
+    if (window.Telegram?.WebApp) {
+      // Initialize Telegram WebApp
+      window.Telegram.WebApp.ready();
+      
+      // Get initData from WebApp
+      const webAppInitData = window.Telegram.WebApp.initData;
+      
+      if (webAppInitData) {
+        localStorage.setItem('telegramInitData', webAppInitData);
+        setTelegramInitData(webAppInitData);
+      } else if (savedInitData) {
+        setTelegramInitData(savedInitData);
+      }
+    } else if (savedInitData) {
+      setTelegramInitData(savedInitData);
+    }
+  }, []);
+
   // Parse initData when it changes
   useEffect(() => {
     if (telegramInitData) {
       try {
-        // Telegram sends data as URL-encoded string
         const searchParams = new URLSearchParams(telegramInitData);
         const userData = searchParams.get('user');
         
-        // Create a parsed data object
-        const parsed: TelegramInitData = {
-          auth_date: Number(searchParams.get('auth_date') || 0),
-          hash: searchParams.get('hash') || undefined,
-          query_id: searchParams.get('query_id') || undefined,
-        };
-        
-        // Parse the user data if present
         if (userData) {
           const user = JSON.parse(userData) as TelegramUserData;
-          parsed.user = user;
           setTelegramUser(user);
           setIsAuthenticated(true);
           
-          // You can use Telegram user data to determine role if needed
-          // For example, checking against a list of recruiter IDs
-          // For now, we keep the role selection functionality
+          toast({
+            title: "Telegram данные получены",
+            description: `Привет, ${user.first_name}!`,
+          });
         }
         
-        setParsedInitData(parsed);
-        
-        // Store in localStorage for persistence
-        localStorage.setItem('telegramInitData', telegramInitData);
-        
-        toast({
-          title: "Telegram данные получены",
-          description: `Привет, ${parsed.user?.first_name || 'пользователь'}!`,
+        setParsedInitData({
+          auth_date: Number(searchParams.get('auth_date') || 0),
+          hash: searchParams.get('hash') || undefined,
+          query_id: searchParams.get('query_id') || undefined,
+          user: userData ? JSON.parse(userData) : undefined
         });
-        
-        // TODO: Send initData to backend for validation (important for security)
-        // This would validate that the request is actually coming from Telegram
-        // Expected request: POST /api/telegram/validate { initData: telegramInitData }
-        // Expected response: { valid: boolean, user?: { id, name, ... } }
         
       } catch (error) {
         console.error('Failed to parse Telegram initData:', error);
@@ -122,29 +128,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [telegramInitData, toast]);
 
-  // Try to restore Telegram data from localStorage on initial load
-  useEffect(() => {
-    const savedInitData = localStorage.getItem('telegramInitData');
-    if (savedInitData) {
-      setTelegramInitData(savedInitData);
-    }
-    
-    // Setup Telegram WebApp if it's available
-    if (window.Telegram?.WebApp) {
-      // Initialize Telegram WebApp
-      window.Telegram.WebApp.ready();
-      
-      // If initData is not provided manually, get it from WebApp
-      if (!telegramInitData && window.Telegram.WebApp.initData) {
-        setTelegramInitData(window.Telegram.WebApp.initData);
-      }
-    }
-  }, [telegramInitData]);
-
-  /**
-   * Toggle between applicant and recruiter roles
-   * Updates local storage and could connect to an API
-   */
+  // Toggle between applicant and recruiter roles
   const toggleRole = () => {
     const newRole = role === 'applicant' ? 'recruiter' : 'applicant';
     setRole(newRole);
@@ -160,6 +144,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     // Expected response: { success: boolean, user: { role: string, ... } }
   };
 
+  // Get the auth header value
+  const authHeader = telegramInitData ? `X-Auth: ${telegramInitData}` : null;
+
   // Context value that will be provided to consumers
   const contextValue = {
     role,
@@ -168,8 +155,13 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     telegramUser,
     telegramInitData,
     parsedInitData,
-    setTelegramInitData
+    authHeader
   };
+
+  // If no Telegram data is available, show the auth required screen
+  if (!telegramInitData && !window.Telegram?.WebApp) {
+    return <TelegramAuthRequired />;
+  }
 
   return (
     <UserContext.Provider value={contextValue}>
@@ -198,10 +190,9 @@ declare global {
     Telegram?: {
       WebApp?: {
         ready: () => void;
-        expand: () => void;  // Add the missing expand method
+        expand: () => void;
         initData: string;
         initDataUnsafe?: any;
-        // Add more Telegram WebApp methods as needed
       };
     };
   }
