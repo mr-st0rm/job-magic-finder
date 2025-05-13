@@ -54,12 +54,15 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 // Функция для определения запуска в Telegram
 const isTelegramWebApp = (): boolean => {
   // Проверяем наличие объекта window.Telegram и характерных свойств WebApp
+  const tg = window.Telegram;
+  const webApp = tg?.WebApp;
+  
   return Boolean(
     typeof window !== 'undefined' && 
-    window.Telegram && 
-    window.Telegram.WebApp && 
+    tg !== undefined && 
+    webApp !== undefined && 
     // Дополнительно проверяем наличие характерных методов WebApp для надежности
-    typeof window.Telegram.WebApp.ready === 'function'
+    typeof webApp.ready === 'function'
   );
 };
 
@@ -96,20 +99,23 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       console.log('Приложение запущено в Telegram WebApp');
       
       // Initialize Telegram WebApp
-      window.Telegram.WebApp.ready();
+      const webApp = window.Telegram?.WebApp;
+      if (webApp) {
+        webApp.ready();
       
-      // Get initData from WebApp
-      const webAppInitData = window.Telegram.WebApp.initData;
-      
-      if (webAppInitData) {
-        console.log('Получены данные initData из Telegram WebApp');
-        localStorage.setItem('telegramInitData', webAppInitData);
-        setTelegramInitData(webAppInitData);
-      } else if (savedInitData) {
-        console.log('Используем сохраненные данные из localStorage');
-        setTelegramInitData(savedInitData);
-      } else {
-        console.log('initData отсутствует в Telegram WebApp');
+        // Get initData from WebApp
+        const webAppInitData = webApp.initData;
+        
+        if (webAppInitData) {
+          console.log('Получены данные initData из Telegram WebApp');
+          localStorage.setItem('telegramInitData', webAppInitData);
+          setTelegramInitData(webAppInitData);
+        } else if (savedInitData) {
+          console.log('Используем сохраненные данные из localStorage');
+          setTelegramInitData(savedInitData);
+        } else {
+          console.log('initData отсутствует в Telegram WebApp');
+        }
       }
     } else if (savedInitData) {
       console.log('Приложение запущено в обычном браузере, используем сохраненные данные');

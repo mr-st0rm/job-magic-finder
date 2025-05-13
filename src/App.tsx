@@ -42,30 +42,33 @@ const queryClient = new QueryClient({
 const TelegramApp = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // Проверяем запущено ли приложение в Telegram WebApp
+    const tg = window.Telegram;
+    const webApp = tg?.WebApp;
+    
     const isTelegramWebApp = 
       typeof window !== 'undefined' && 
-      window.Telegram && 
-      window.Telegram.WebApp && 
-      typeof window.Telegram.WebApp.ready === 'function';
+      tg !== undefined && 
+      webApp !== undefined && 
+      typeof webApp.ready === 'function';
 
     // Initialize Telegram WebApp when component mounts
-    if (isTelegramWebApp) {
+    if (isTelegramWebApp && webApp) {
       try {
         // Set the app to expand to full height
-        window.Telegram.WebApp.expand();
+        webApp.expand();
         
         // Make app ready
-        window.Telegram.WebApp.ready();
+        webApp.ready();
         
         // Log WebApp initialization
         console.log('Telegram WebApp initialized successfully');
         console.log('WebApp data:', {
-          initDataUnsafe: window.Telegram.WebApp.initDataUnsafe,
-          version: window.Telegram.WebApp.version,
-          platform: window.Telegram.WebApp.platform,
-          colorScheme: window.Telegram.WebApp.colorScheme,
-          viewportHeight: window.Telegram.WebApp.viewportHeight,
-          viewportStableHeight: window.Telegram.WebApp.viewportStableHeight
+          initDataUnsafe: webApp.initDataUnsafe,
+          version: webApp.version,
+          platform: webApp.platform,
+          colorScheme: webApp.colorScheme,
+          viewportHeight: webApp.viewportHeight,
+          viewportStableHeight: webApp.viewportStableHeight
         });
       } catch (error) {
         console.error('Error initializing Telegram WebApp:', error);
@@ -75,7 +78,7 @@ const TelegramApp = ({ children }: { children: React.ReactNode }) => {
       console.log('User agent:', navigator.userAgent);
       
       // Проверка для отладки - почему не определяется Telegram WebApp
-      if (window.Telegram) {
+      if (tg) {
         console.log('window.Telegram exists but WebApp is missing or incomplete');
       }
     }
