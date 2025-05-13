@@ -124,3 +124,22 @@ const App = () => (
 );
 
 export default App;
+
+// Extend the global TypeScript declaration for Telegram WebApp
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp?: {
+        ready: () => void;
+        expand: () => void;
+        initData: string;
+        initDataUnsafe?: any;
+        version?: string;
+        platform?: string;
+        colorScheme?: string;
+        viewportHeight?: number;
+        viewportStableHeight?: number;
+      };
+    };
+  }
+}
