@@ -211,17 +211,3 @@ export const useUser = (): UserContextType => {
   }
   return context;
 };
-
-// Add TypeScript declaration for Telegram WebApp
-declare global {
-  interface Window {
-    Telegram?: {
-      WebApp?: {
-        ready: () => void;
-        expand: () => void;
-        initData: string;
-        initDataUnsafe?: any;
-      };
-    };
-  }
-}
