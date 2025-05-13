@@ -41,18 +41,43 @@ const queryClient = new QueryClient({
  */
 const TelegramApp = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
+    // Проверяем запущено ли приложение в Telegram WebApp
+    const isTelegramWebApp = 
+      typeof window !== 'undefined' && 
+      window.Telegram && 
+      window.Telegram.WebApp && 
+      typeof window.Telegram.WebApp.ready === 'function';
+
     // Initialize Telegram WebApp when component mounts
-    if (window.Telegram?.WebApp) {
-      // Set the app to expand to full height
-      window.Telegram.WebApp.expand();
-      
-      // Make app ready
-      window.Telegram.WebApp.ready();
-      
-      // Log WebApp initialization
-      console.log('Telegram WebApp initialized', window.Telegram.WebApp.initDataUnsafe);
+    if (isTelegramWebApp) {
+      try {
+        // Set the app to expand to full height
+        window.Telegram.WebApp.expand();
+        
+        // Make app ready
+        window.Telegram.WebApp.ready();
+        
+        // Log WebApp initialization
+        console.log('Telegram WebApp initialized successfully');
+        console.log('WebApp data:', {
+          initDataUnsafe: window.Telegram.WebApp.initDataUnsafe,
+          version: window.Telegram.WebApp.version,
+          platform: window.Telegram.WebApp.platform,
+          colorScheme: window.Telegram.WebApp.colorScheme,
+          viewportHeight: window.Telegram.WebApp.viewportHeight,
+          viewportStableHeight: window.Telegram.WebApp.viewportStableHeight
+        });
+      } catch (error) {
+        console.error('Error initializing Telegram WebApp:', error);
+      }
     } else {
       console.log('Telegram WebApp not available - running in browser mode');
+      console.log('User agent:', navigator.userAgent);
+      
+      // Проверка для отладки - почему не определяется Telegram WebApp
+      if (window.Telegram) {
+        console.log('window.Telegram exists but WebApp is missing or incomplete');
+      }
     }
   }, []);
 

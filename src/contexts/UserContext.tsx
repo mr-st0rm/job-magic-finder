@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import TelegramAuthRequired from '@/components/TelegramAuthRequired';
@@ -50,6 +51,18 @@ interface UserContextType {
 // Create the context with undefined initial value
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
+// Функция для определения запуска в Telegram
+const isTelegramWebApp = (): boolean => {
+  // Проверяем наличие объекта window.Telegram и характерных свойств WebApp
+  return Boolean(
+    typeof window !== 'undefined' && 
+    window.Telegram && 
+    window.Telegram.WebApp && 
+    // Дополнительно проверяем наличие характерных методов WebApp для надежности
+    typeof window.Telegram.WebApp.ready === 'function'
+  );
+};
+
 /**
  * Provider component that wraps the app and makes user context available
  * @param {Object} props - Component props
@@ -69,12 +82,19 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [parsedInitData, setParsedInitData] = useState<TelegramInitData | null>(null);
   const [telegramUser, setTelegramUser] = useState<TelegramUserData | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isTelegram, setIsTelegram] = useState<boolean>(false);
 
   // Initialize Telegram WebApp and get initData
   useEffect(() => {
+    // Определяем, запущено ли приложение в Telegram
+    const isInTelegram = isTelegramWebApp();
+    setIsTelegram(isInTelegram);
+    
     const savedInitData = localStorage.getItem('telegramInitData');
     
-    if (window.Telegram?.WebApp) {
+    if (isInTelegram) {
+      console.log('Приложение запущено в Telegram WebApp');
+      
       // Initialize Telegram WebApp
       window.Telegram.WebApp.ready();
       
@@ -82,13 +102,20 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       const webAppInitData = window.Telegram.WebApp.initData;
       
       if (webAppInitData) {
+        console.log('Получены данные initData из Telegram WebApp');
         localStorage.setItem('telegramInitData', webAppInitData);
         setTelegramInitData(webAppInitData);
       } else if (savedInitData) {
+        console.log('Используем сохраненные данные из localStorage');
         setTelegramInitData(savedInitData);
+      } else {
+        console.log('initData отсутствует в Telegram WebApp');
       }
     } else if (savedInitData) {
+      console.log('Приложение запущено в обычном браузере, используем сохраненные данные');
       setTelegramInitData(savedInitData);
+    } else {
+      console.log('Приложение запущено в обычном браузере без сохраненных данных');
     }
   }, []);
 
@@ -158,8 +185,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     authHeader
   };
 
-  // If no Telegram data is available, show the auth required screen
-  if (!telegramInitData && !window.Telegram?.WebApp) {
+  // Если приложение должно быть запущено в Telegram, но мы не в нем,
+  // и нет никаких сохраненных данных, показываем экран требования Telegram
+  if (!isTelegram && !telegramInitData) {
     return <TelegramAuthRequired />;
   }
 
