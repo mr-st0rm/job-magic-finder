@@ -64,11 +64,11 @@ const TelegramApp = ({ children }: { children: React.ReactNode }) => {
         console.log('Telegram WebApp initialized successfully');
         console.log('WebApp data:', {
           initDataUnsafe: webApp.initDataUnsafe,
-          version: webApp.version,
-          platform: webApp.platform,
-          colorScheme: webApp.colorScheme,
-          viewportHeight: webApp.viewportHeight,
-          viewportStableHeight: webApp.viewportStableHeight
+          version: webApp?.version,
+          platform: webApp?.platform,
+          colorScheme: webApp?.colorScheme,
+          viewportHeight: webApp?.viewportHeight,
+          viewportStableHeight: webApp?.viewportStableHeight
         });
       } catch (error) {
         console.error('Error initializing Telegram WebApp:', error);

@@ -54,7 +54,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 // Функция для определения запуска в Telegram
 const isTelegramWebApp = (): boolean => {
   // Проверяем наличие объекта window.Telegram и характерных свойств WebApp
-  const tg = window.Telegram;
+  const tg = window?.Telegram;
   const webApp = tg?.WebApp;
   
   return Boolean(
