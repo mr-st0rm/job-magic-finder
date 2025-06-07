@@ -4,8 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 
 const TelegramAuthRequired = () => {
-  // TODO: Заменить на реальную ссылку вашего бота в Telegram
-  const BOT_LINK = "https://t.me/hrocket_bot"; // Пример ссылки
+  const BOT_LINK = "https://t.me/hrocket_bot";
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50 dark:bg-gray-900">

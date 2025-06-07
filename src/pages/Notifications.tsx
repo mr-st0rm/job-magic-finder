@@ -42,35 +42,9 @@ const Notifications = () => {
    */
   const fetchNotifications = () => {
     setLoading(true);
-    
-    // Simulate API call with timeout
+
     setTimeout(() => {
-      const sampleNotifications: Notification[] = [
-        {
-          id: '1',
-          title: 'Новый отклик на вакансию',
-          description: 'Дмитрий П. откликнулся на вашу вакансию "React разработчик"',
-          date: '1 час назад',
-          read: false,
-          type: 'application'
-        },
-        {
-          id: '2',
-          title: 'Просмотр контактов',
-          description: 'Кто-то просмотрел ваши контакты по вакансии "UX/UI дизайнер"',
-          date: '3 часа назад',
-          read: false,
-          type: 'view'
-        },
-        {
-          id: '3',
-          title: 'Сообщение от поддержки',
-          description: 'Ваша вакансия "Java разработчик" успешно опубликована',
-          date: 'Вчера',
-          read: true,
-          type: 'system'
-        }
-      ];
+      const sampleNotifications: Notification[] = [];
       setNotifications(sampleNotifications);
       setLoading(false);
     }, 500);

@@ -16,30 +16,17 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/components/ui/use-toast';
+import {api} from "@/utils/api.ts";
 
 const Profile = () => {
-  const [darkMode, setDarkMode] = useState(false);
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const { role, toggleRole } = useUser();
   const { toast } = useToast();
 
-  // Check for saved theme preference
   useEffect(() => {
-    const isDarkMode = localStorage.getItem('darkMode') === 'true';
-    setDarkMode(isDarkMode);
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    api.getCurrentUser().then((usr) => setUser(usr));
   }, []);
-
-  const handleToggleDarkMode = () => {
-    const newDarkMode = !darkMode;
-    setDarkMode(newDarkMode);
-    localStorage.setItem('darkMode', newDarkMode.toString());
-    document.documentElement.classList.toggle('dark');
-  };
 
   const handleToggleRole = () => {
     toggleRole();
@@ -59,7 +46,7 @@ const Profile = () => {
               <User className="h-8 w-8 text-gray-500 dark:text-gray-400" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Иван Иванов</h2>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{user?.first_name}</h2>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 {role === 'applicant' ? 'Соискатель' : 'Рекрутер'}
               </p>
@@ -122,20 +109,6 @@ const Profile = () => {
             <span className="flex-1 text-left">Уведомления</span>
             <ChevronRight className="h-5 w-5 text-gray-400" />
           </Button>
-          
-          <div className="flex items-center justify-between py-3 px-4 border-b border-gray-100 dark:border-gray-700">
-            <div className="flex items-center">
-              {darkMode ? 
-                <Moon className="h-5 w-5 mr-3 text-gray-500" /> : 
-                <Sun className="h-5 w-5 mr-3 text-gray-500" />
-              }
-              <span>Темная тема</span>
-            </div>
-            <Switch 
-              checked={darkMode} 
-              onCheckedChange={handleToggleDarkMode}
-            />
-          </div>
           
           <Button 
             variant="ghost" 

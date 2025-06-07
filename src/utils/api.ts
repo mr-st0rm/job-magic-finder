@@ -1,63 +1,12 @@
+import {createApiClient} from "@/utils/baseApi.ts";
 
-import { retrieveRawInitData } from "@telegram-apps/sdk";
+const apiClient = createApiClient();
 
-interface FetchOptions extends RequestInit {
-  params?: Record<string, string>;
-}
+export const api = {
+  getCurrentUser: () => apiClient.get('/api/v1/user/me/'),
+  getVacancyById: (vacancyId: number) => apiClient.get(`/api/v1/vacancy/${vacancyId}/`),
 
-export const createApiClient = () => {
-  const fetcher = async (endpoint: string, options: FetchOptions = {}) => {
-    const { params, headers = {}, ...rest } = options;
-    
-    // Получаем актуальный initData через Telegram SDK
-    const rawInitData = retrieveRawInitData();
-    
-    if (rawInitData) {
-      headers['X-User'] = rawInitData;
-    }
-
-    // Построение URL с параметрами
-    const url = new URL(endpoint, process.env.VITE_API_URL || 'http://localhost:3000');
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        url.searchParams.append(key, value);
-      });
-    }
-
-    const response = await fetch(url.toString(), {
-      headers: {
-        'Content-Type': 'application/json',
-        ...headers,
-      },
-      ...rest,
-    });
-
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.statusText}`);
-    }
-
-    return response.json();
-  };
-
-  return {
-    get: <T>(endpoint: string, options?: FetchOptions) => 
-      fetcher(endpoint, { ...options, method: 'GET' }) as Promise<T>,
-    
-    post: <T>(endpoint: string, data?: any, options?: FetchOptions) =>
-      fetcher(endpoint, { 
-        ...options, 
-        method: 'POST',
-        body: JSON.stringify(data)
-      }) as Promise<T>,
-    
-    put: <T>(endpoint: string, data?: any, options?: FetchOptions) =>
-      fetcher(endpoint, {
-        ...options,
-        method: 'PUT',
-        body: JSON.stringify(data)
-      }) as Promise<T>,
-    
-    delete: <T>(endpoint: string, options?: FetchOptions) =>
-      fetcher(endpoint, { ...options, method: 'DELETE' }) as Promise<T>,
-  };
+  getSkills: () => apiClient.get('/api/v1/vacancy/skills/'),
+  getCategories: () => apiClient.get('/api/v1/vacancy/categories/'),
+  getCompanies: () => apiClient.get('/api/v1/vacancy/companies/'),
 };

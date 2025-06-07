@@ -56,11 +56,6 @@ export const useTelegramSDK = () => {
             const user = JSON.parse(userData) as TelegramUserData;
             setTelegramUser(user);
             setIsAuthenticated(true);
-            
-            toast({
-              title: "Telegram данные получены",
-              description: `Привет, ${user.first_name}!`,
-            });
           }
           
           setParsedInitData({
