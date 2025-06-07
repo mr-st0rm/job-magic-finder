@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -223,7 +222,7 @@ const EditJob = () => {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="relative">
+                <div>
                   <Label htmlFor="type" className={errors.type ? 'text-destructive' : ''}>Тип занятости</Label>
                   <Select
                     value={formData.type}
@@ -232,7 +231,7 @@ const EditJob = () => {
                     <SelectTrigger className={errors.type ? 'border-destructive' : ''}>
                       <SelectValue placeholder="Выберите тип" />
                     </SelectTrigger>
-                    <SelectContent className="z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-lg">
+                    <SelectContent className="z-[9999] bg-popover text-popover-foreground border shadow-md">
                       <SelectItem value="Полная занятость">Полная занятость</SelectItem>
                       <SelectItem value="Частичная занятость">Частичная занятость</SelectItem>
                       <SelectItem value="Проектная работа">Проектная работа</SelectItem>
