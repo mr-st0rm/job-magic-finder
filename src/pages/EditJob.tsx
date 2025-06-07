@@ -231,7 +231,7 @@ const EditJob = () => {
                     <SelectTrigger className={errors.type ? 'border-destructive' : ''}>
                       <SelectValue placeholder="Выберите тип" />
                     </SelectTrigger>
-                    <SelectContent className="z-[9999] bg-popover text-popover-foreground border shadow-md">
+                    <SelectContent className="z-[9999] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-200 shadow-lg">
                       <SelectItem value="Полная занятость">Полная занятость</SelectItem>
                       <SelectItem value="Частичная занятость">Частичная занятость</SelectItem>
                       <SelectItem value="Проектная работа">Проектная работа</SelectItem>
