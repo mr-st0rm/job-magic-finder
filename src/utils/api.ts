@@ -1,19 +1,19 @@
 
-import { useUser } from "@/contexts/UserContext";
+import { retrieveRawInitData } from "@telegram-apps/sdk";
 
 interface FetchOptions extends RequestInit {
   params?: Record<string, string>;
 }
 
 export const createApiClient = () => {
-  const { telegramInitData } = useUser();
-
   const fetcher = async (endpoint: string, options: FetchOptions = {}) => {
     const { params, headers = {}, ...rest } = options;
     
-    // Всегда добавляем актуальный telegramInitData в headers
-    if (telegramInitData) {
-      headers['X-Auth'] = telegramInitData;
+    // Получаем актуальный initData через Telegram SDK
+    const rawInitData = retrieveRawInitData();
+    
+    if (rawInitData) {
+      headers['X-User'] = rawInitData;
     }
 
     // Построение URL с параметрами
