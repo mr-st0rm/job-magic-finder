@@ -7,17 +7,9 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/components/ui/use-toast';
 
 const Settings = () => {
-  const [darkMode, setDarkMode] = useState(localStorage.getItem('darkMode') === 'true');
   const [notifications, setNotifications] = useState(true);
   const [language] = useState('ru');
   const { toast } = useToast();
-  
-  const handleToggleDarkMode = () => {
-    const newDarkMode = !darkMode;
-    setDarkMode(newDarkMode);
-    localStorage.setItem('darkMode', newDarkMode.toString());
-    document.documentElement.classList.toggle('dark', newDarkMode);
-  };
   
   const handleSaveSettings = () => {
     // TODO: Отправить настройки на сервер
@@ -74,32 +66,6 @@ const Settings = () => {
                 <div className="text-sm bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-md">
                   {language === 'ru' ? 'Русский' : 'English'}
                 </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="p-4 border-b border-gray-100 dark:border-gray-700">
-            <div className="flex items-center gap-3 mb-3">
-              {darkMode ? 
-                <Moon className="h-5 w-5 text-primary" /> : 
-                <Sun className="h-5 w-5 text-primary" />
-              }
-              <h2 className="text-lg font-medium text-gray-900 dark:text-white">
-                Оформление
-              </h2>
-            </div>
-            
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Темная тема
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Переключить на темное оформление
-                  </p>
-                </div>
-                <Switch checked={darkMode} onCheckedChange={handleToggleDarkMode} />
               </div>
             </div>
           </div>

@@ -30,6 +30,7 @@ const Profile = () => {
 
   const handleToggleRole = () => {
     toggleRole();
+    api.updateCurrentUserSettings({role}).then();
     toast({
       title: role === 'applicant' ? 'Режим рекрутера активирован' : 'Режим соискателя активирован',
       description: 'Ваш интерфейс обновлен согласно выбранной роли',

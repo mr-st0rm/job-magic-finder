@@ -4,6 +4,7 @@ import { ArrowLeft, Moon, Sun, Home, Search, User, Sparkles, BriefcaseBusiness, 
 import { useUser } from '@/contexts/UserContext';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
+import {api} from "@/utils/api.ts";
 
 interface LayoutProps {
   children: ReactNode;
@@ -53,6 +54,7 @@ const Layout = ({ children }: LayoutProps) => {
     
     // Save preference to localStorage
     localStorage.setItem('darkMode', String(newDarkMode));
+    api.updateCurrentUserSettings({ settings: { dark_mode: darkMode } }).then();
     
     // Apply theme to document
     if (newDarkMode) {

@@ -57,6 +57,13 @@ export const createApiClient = () => {
         body: JSON.stringify(data)
       }) as Promise<T>,
 
+    patch: <T>(endpoint: string, data?: any, options?: FetchOptions) =>
+        fetcher(endpoint, {
+          ...options,
+          method: 'PATCH',
+          body: JSON.stringify(data)
+        }) as Promise<T>,
+
     delete: <T>(endpoint: string, options?: FetchOptions) =>
       fetcher(endpoint, { ...options, method: 'DELETE' }) as Promise<T>,
   };
