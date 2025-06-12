@@ -28,12 +28,14 @@ const Profile = () => {
   }, []);
 
   const handleToggleRole = () => {
+    const newRole = role === 'applicant' ? 'recruiter' : 'applicant';
+    
     toggleRole();
     toast({
-      title: role === 'applicant' ? 'Режим рекрутера активирован' : 'Режим соискателя активирован',
+      title: newRole === 'recruiter' ? 'Режим рекрутера активирован' : 'Режим соискателя активирован',
       description: 'Ваш интерфейс обновлен согласно выбранной роли',
     });
-    api.updateCurrentUserSettings({role}).then();
+    api.updateCurrentUserSettings({role: newRole}).then();
   };
 
   return (
