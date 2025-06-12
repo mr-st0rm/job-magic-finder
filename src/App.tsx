@@ -45,6 +45,9 @@ const App = () => (
             <Route path="/my-jobs" element={<Layout>{<MyJobs />}</Layout>} />
             <Route path="/create-job" element={<Layout>{<CreateJob />}</Layout>} />
             <Route path="/edit-job/:id" element={<Layout>{<EditJob />}</Layout>} />
+            <Route path="/my-companies" element={<Layout>{<MyCompanies />}</Layout>} />
+            <Route path="/create-company" element={<Layout>{<CreateCompany />}</Layout>} />
+            <Route path="/edit-company/:id" element={<Layout>{<EditCompany />}</Layout>} />
             <Route path="/edit-profile" element={<Layout>{<EditProfile />}</Layout>} />
             <Route path="/settings" element={<Layout>{<Settings />}</Layout>} />
             <Route path="/notifications" element={<Layout>{<Notifications />}</Layout>} />

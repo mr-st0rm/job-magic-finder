@@ -7,10 +7,9 @@ import {
   BriefcaseBusiness, 
   Bell,
   ChevronRight, 
-  Moon, 
-  Sun, 
   HelpCircle,
-  RefreshCw
+  RefreshCw,
+  Building2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
@@ -128,6 +127,16 @@ const Profile = () => {
         <section className="py-3">
           <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2 px-1">Инструменты рекрутера</h3>
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
+            <Button 
+              variant="ghost" 
+              className="w-full justify-start py-3 px-4 rounded-none border-b border-gray-100 dark:border-gray-700"
+              onClick={() => navigate('/my-companies')}
+            >
+              <Building2 className="h-5 w-5 mr-3 text-gray-500" />
+              <span className="flex-1 text-left">Мои компании</span>
+              <ChevronRight className="h-5 w-5 text-gray-400" />
+            </Button>
+            
             <Button 
               variant="ghost" 
               className="w-full justify-start py-3 px-4 rounded-none border-b border-gray-100 dark:border-gray-700"

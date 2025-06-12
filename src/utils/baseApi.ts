@@ -1,3 +1,4 @@
+
 import { retrieveRawInitData } from "@telegram-apps/sdk";
 import * as process from "node:process";
 
