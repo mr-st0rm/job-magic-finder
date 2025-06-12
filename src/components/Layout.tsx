@@ -54,14 +54,15 @@ const Layout = ({ children }: LayoutProps) => {
     
     // Save preference to localStorage
     localStorage.setItem('darkMode', String(newDarkMode));
-    api.updateCurrentUserSettings({ settings: { dark_mode: darkMode } }).then();
-    
+
     // Apply theme to document
     if (newDarkMode) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
+
+    api.updateCurrentUserSettings({ settings: { dark_mode: newDarkMode } }).then();
   };
 
   // Define which pages are considered "main pages" to hide back button

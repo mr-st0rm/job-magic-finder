@@ -1,7 +1,7 @@
 
 import { createApiClient } from './baseApi';
 
-const api = createApiClient();
+const apiClient = createApiClient();
 
 export interface CompanyCreateSchema {
   name: string;
@@ -21,18 +21,18 @@ export interface Company extends CompanyCreateSchema {
 
 export const companiesApi = {
   // Получить список компаний пользователя
-  getMyCompanies: () => api.get<Company[]>('/companies/my'),
+  getMyCompanies: () => apiClient.get<Company[]>('/api/v1/vacancy/companies/'),
   
   // Создать компанию
-  createCompany: (data: CompanyCreateSchema) => api.post<Company>('/companies', data),
+  createCompany: (data: CompanyCreateSchema) => apiClient.post<Company>('/companies', data),
   
   // Обновить компанию
   updateCompany: (id: string, data: Partial<CompanyCreateSchema>) => 
-    api.patch<Company>(`/companies/${id}`, data),
+    apiClient.patch<Company>(`/companies/${id}`, data),
   
   // Удалить компанию
-  deleteCompany: (id: string) => api.delete(`/companies/${id}`),
+  deleteCompany: (id: string) => apiClient.delete(`/companies/${id}`),
   
   // Получить компанию по ID
-  getCompany: (id: string) => api.get<Company>(`/companies/${id}`)
+  getCompany: (id: string) => apiClient.get<Company>(`/companies/${id}`)
 };
