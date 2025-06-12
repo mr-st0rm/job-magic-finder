@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,11 +13,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from '@/lib/utils';
+import { useQuery } from '@tanstack/react-query';
+import { companiesApi, Company } from '@/utils/companiesApi';
 
 const CreateJob = () => {
   const [formData, setFormData] = useState({
     title: '',
-    company: '',
+    company_id: '', // Изменено с company на company_id
     location: '',
     type: '',
     salary: '',
@@ -28,8 +30,8 @@ const CreateJob = () => {
     contact_phone: '',
     contact_email: '',
     contact_telegram: '',
-    isPremium: false, // Выделение вакансии в поиске
-    isFeatured: false, // Флаг для рекомендуемых вакансий
+    isPremium: false,
+    isFeatured: false,
     status: 'draft' as 'draft' | 'published',
   });
   
@@ -37,12 +39,17 @@ const CreateJob = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
+  // Загружаем список компаний пользователя
+  const { data: companies = [], isLoading: isLoadingCompanies } = useQuery({
+    queryKey: ['my-companies'],
+    queryFn: companiesApi.getMyCompanies,
+  });
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
     setFormData(prev => ({ ...prev, [id]: value }));
     
-    // Очищаем ошибку для этого поля, если она существует
     if (errors[id]) {
       setErrors(prev => {
         const newErrors = { ...prev };
@@ -55,7 +62,6 @@ const CreateJob = () => {
   const handleSelectChange = (value: string, fieldName: string) => {
     setFormData(prev => ({ ...prev, [fieldName]: value }));
     
-    // Очищаем ошибку для этого поля, если она существует
     if (errors[fieldName]) {
       setErrors(prev => {
         const newErrors = { ...prev };
@@ -73,25 +79,21 @@ const CreateJob = () => {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
-    // Проверяем обязательные поля
     if (!formData.title.trim()) newErrors.title = 'Введите название должности';
-    if (!formData.company.trim()) newErrors.company = 'Введите название компании';
+    if (!formData.company_id) newErrors.company_id = 'Выберите компанию';
     if (!formData.location.trim()) newErrors.location = 'Введите местоположение';
     if (!formData.type) newErrors.type = 'Выберите тип занятости';
     
-    // Проверяем зарплату - должна содержать хотя бы одну цифру
     if (!formData.salary.trim()) {
       newErrors.salary = 'Введите информацию о зарплате';
     } else if (!/\d/.test(formData.salary)) {
       newErrors.salary = 'Зарплата должна содержать хотя бы одну цифру';
     }
     
-    // Проверяем описание
     if (!formData.description.trim()) newErrors.description = 'Добавьте описание вакансии';
     if (!formData.requirements.trim()) newErrors.requirements = 'Укажите требования';
     if (!formData.responsibilities.trim()) newErrors.responsibilities = 'Укажите обязанности';
     
-    // Проверяем контакты (хотя бы один способ связи должен быть указан)
     if (!formData.contact_name.trim()) newErrors.contact_name = 'Укажите контактное лицо';
     
     const hasEmail = formData.contact_email.trim() !== '';
@@ -114,8 +116,7 @@ const CreateJob = () => {
     setIsSubmitting(true);
     
     // TODO: Отправить данные на сервер
-    // TODO: Реализовать платную публикацию вакансий (выделение в поиске)
-    // TODO: Реализовать обработку рекомендуемых вакансий (добавление в блок рекомендуемых)
+    console.log('Создание вакансии с данными:', formData);
     
     setTimeout(() => {
       setIsSubmitting(false);
@@ -160,15 +161,43 @@ const CreateJob = () => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="company" className={errors.company ? 'text-destructive' : ''}>Компания</Label>
-                  <Input 
-                    id="company" 
-                    placeholder="Название компании" 
-                    value={formData.company}
-                    onChange={handleChange}
-                    className={errors.company ? 'border-destructive' : ''}
-                  />
-                  {errors.company && <p className="text-xs text-destructive mt-1">{errors.company}</p>}
+                  <Label htmlFor="company_id" className={errors.company_id ? 'text-destructive' : ''}>Компания</Label>
+                  {isLoadingCompanies ? (
+                    <div className="h-10 border rounded-md flex items-center px-3 text-gray-500">
+                      Загрузка компаний...
+                    </div>
+                  ) : companies.length === 0 ? (
+                    <div className="space-y-2">
+                      <div className="h-10 border rounded-md flex items-center px-3 text-gray-500">
+                        У вас нет компаний
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate('/create-company')}
+                      >
+                        Создать компанию
+                      </Button>
+                    </div>
+                  ) : (
+                    <Select
+                      value={formData.company_id}
+                      onValueChange={(value) => handleSelectChange(value, 'company_id')}
+                    >
+                      <SelectTrigger className={errors.company_id ? 'border-destructive' : ''}>
+                        <SelectValue placeholder="Выберите компанию" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-200 shadow-lg">
+                        {companies.map((company) => (
+                          <SelectItem key={company.id} value={company.id}>
+                            {company.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                  {errors.company_id && <p className="text-xs text-destructive mt-1">{errors.company_id}</p>}
                 </div>
                 
                 <div>
@@ -194,7 +223,7 @@ const CreateJob = () => {
                     <SelectTrigger className={errors.type ? 'border-destructive' : ''}>
                       <SelectValue placeholder="Выберите тип" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-200 shadow-lg">
                       <SelectItem value="Полная занятость">Полная занятость</SelectItem>
                       <SelectItem value="Частичная занятость">Частичная занятость</SelectItem>
                       <SelectItem value="Проектная работа">Проектная работа</SelectItem>
@@ -382,7 +411,7 @@ const CreateJob = () => {
                   <SelectTrigger id="status">
                     <SelectValue placeholder="Выберите статус" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-200 shadow-lg">
                     <SelectItem value="draft">Сохранить как черновик</SelectItem>
                     <SelectItem value="published">Опубликовать сразу</SelectItem>
                   </SelectContent>
@@ -392,7 +421,6 @@ const CreateJob = () => {
               <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
                 <p className="text-sm text-gray-700 dark:text-gray-300">
                   <strong>Обратите внимание:</strong> Выделение вакансии и добавление в рекомендуемые тарифицируются отдельно.
-                  {/* TODO: Добавить информацию о стоимости публикации */}
                 </p>
               </div>
             </div>
@@ -409,7 +437,7 @@ const CreateJob = () => {
             </Button>
             <Button 
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || companies.length === 0}
               className="flex-1"
             >
               {isSubmitting ? 'Публикация...' : formData.status === 'published' 
