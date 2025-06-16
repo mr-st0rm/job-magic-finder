@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -16,12 +15,14 @@ import { Switch } from '@/components/ui/switch';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/components/ui/use-toast';
 import {api} from "@/utils/api.ts";
+import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 const Profile = () => {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const { role, toggleRole } = useUser();
   const { toast } = useToast();
+  const { data: user, isLoading, error } = useCurrentUser();
 
   useEffect(() => {
     api.getCurrentUser().then((usr) => setUser(usr));
@@ -37,6 +38,40 @@ const Profile = () => {
     });
     api.updateCurrentUserSettings({role: newRole}).then();
   };
+
+  if (isLoading) {
+    return (
+      <div className="container-custom px-4">
+        <div className="pt-6 pb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
+            <div className="flex items-center">
+              <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mr-4 animate-pulse">
+                <User className="h-8 w-8 text-gray-500 dark:text-gray-400" />
+              </div>
+              <div>
+                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-2 w-32"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-24"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container-custom px-4">
+        <div className="pt-6 pb-4">
+          <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-4 border border-red-200 dark:border-red-800">
+            <p className="text-red-600 dark:text-red-400">
+              Ошибка загрузки профиля. Попробуйте обновить страницу.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container-custom px-4">
