@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+
 import { useNavigate } from 'react-router-dom';
 import { 
   User, 
@@ -18,15 +18,10 @@ import {api} from "@/utils/api.ts";
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 
 const Profile = () => {
-  const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const { role, toggleRole } = useUser();
   const { toast } = useToast();
   const { data: user, isLoading, error } = useCurrentUser();
-
-  useEffect(() => {
-    api.getCurrentUser().then((usr) => setUser(usr));
-  }, []);
 
   const handleToggleRole = () => {
     const newRole = role === 'applicant' ? 'recruiter' : 'applicant';
