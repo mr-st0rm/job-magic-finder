@@ -1,4 +1,6 @@
+
 import {createApiClient} from "@/utils/baseApi.ts";
+import { User } from "@/types/user";
 
 const apiClient = createApiClient();
 
@@ -19,7 +21,7 @@ interface UserSettingsUpdateSchema {
 
 export const api = {
   // UserData
-  getCurrentUser: () => apiClient.get('/api/v1/user/me/'),
+  getCurrentUser: (): Promise<User> => apiClient.get('/api/v1/user/me/'),
   updateCurrentUserSettings: (
       updateData: UserSettingsUpdateSchema
   ) => apiClient.patch('/api/v1/user/me/settings/', updateData),
