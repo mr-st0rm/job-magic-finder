@@ -1,9 +1,11 @@
-
 import {createApiClient} from "@/utils/baseApi.ts";
 import { User } from "@/types/user";
+import { Vacancy } from "@/types/vacancy";
+import { SkillsResponse } from "@/types/skill";
+import { CategoriesResponse } from "@/types/category";
+import { CompaniesResponse } from "@/types/company";
 
 const apiClient = createApiClient();
-
 
 type UserRole = 'applicant' | 'recruiter';
 
@@ -26,9 +28,9 @@ export const api = {
       updateData: UserSettingsUpdateSchema
   ) => apiClient.patch('/api/v1/user/me/settings/', updateData),
   // VacanciesData
-  getVacancyById: (vacancyId: number) => apiClient.get(`/api/v1/vacancy/${vacancyId}/`),
+  getVacancyById: (vacancyId: number): Promise<Vacancy> => apiClient.get(`/api/v1/vacancy/${vacancyId}/`),
   // AdditionalData
-  getSkills: () => apiClient.get('/api/v1/vacancy/skills/'),
-  getCategories: () => apiClient.get('/api/v1/vacancy/categories/'),
-  getCompanies: () => apiClient.get('/api/v1/vacancy/companies/'),
+  getSkills: (): Promise<SkillsResponse> => apiClient.get('/api/v1/vacancy/skills/'),
+  getCategories: (): Promise<CategoriesResponse> => apiClient.get('/api/v1/vacancy/categories/'),
+  getCompanies: (): Promise<CompaniesResponse> => apiClient.get('/api/v1/vacancy/companies/'),
 };
