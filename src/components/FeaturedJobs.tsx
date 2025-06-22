@@ -1,13 +1,16 @@
 
-import { useState, useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import JobCard from './JobCard';
-import { getFeaturedJobs } from '@/data/jobs';
+import { useVacancies } from '@/hooks/useVacancies';
 import { cn } from '@/lib/utils';
 
 export const FeaturedJobs = () => {
-  const [featuredJobs, setFeaturedJobs] = useState(getFeaturedJobs());
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Load featured jobs from API
+  const { data: featuredPage, isLoading } = useVacancies({ is_featured: true }, 1, 10);
+  const featuredJobs = featuredPage?.items || [];
   
   const scroll = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {
@@ -23,6 +26,22 @@ export const FeaturedJobs = () => {
       });
     }
   };
+
+  if (isLoading) {
+    return (
+      <section className="py-12 relative">
+        <div className="container-custom">
+          <div className="flex justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (featuredJobs.length === 0) {
+    return null;
+  }
 
   return (
     <section className="py-12 relative">
@@ -60,7 +79,7 @@ export const FeaturedJobs = () => {
         >
           {featuredJobs.map((job) => (
             <div key={job.id} className="flex-shrink-0 w-full sm:w-[350px]">
-              <JobCard job={{...job, featured: true}} featured={true} />
+              <JobCard job={job} featured={true} />
             </div>
           ))}
         </div>

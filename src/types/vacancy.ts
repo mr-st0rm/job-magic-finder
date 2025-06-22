@@ -62,6 +62,8 @@ export interface VacancyFilterSchema {
   title?: string | null;
   work_type?: JobType[] | null;
   category_ids?: number[] | null;
+  is_featured?: boolean | null;
+  is_recommended?: boolean | null;
 }
 
 export interface VacanciesPage {

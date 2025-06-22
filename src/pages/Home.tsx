@@ -1,21 +1,21 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getRecentJobs, getFeaturedJobs, getRecommendedJobs, JobListing } from '@/data/jobs';
 import { JobCard } from '@/components/JobCard';
 import { CircleEllipsis } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 import SearchForm from '@/components/SearchForm';
 import { useToast } from '@/hooks/use-toast';
+import { useVacancies } from '@/hooks/useVacancies';
 
 /**
  * Section component to display a list of jobs with a title
- * @param {Object} props - Component props
- * @param {string} props.title - The section title
- * @param {JobListing[]} props.jobs - Array of job listings to display
- * @param {boolean} props.featured - Whether jobs should be displayed as featured
  */
-const JobSection = ({ title, jobs, featured = false }: { title: string; jobs: JobListing[]; featured?: boolean }) => (
+const JobSection = ({ title, jobs, featured = false }: { 
+  title: string; 
+  jobs: any[]; 
+  featured?: boolean 
+}) => (
   <section className="py-4">
     <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
       {title}
@@ -43,16 +43,26 @@ const LoadingSpinner = () => (
  * Shows different job listings based on user role and preferences
  */
 const Home = () => {
-  // State for job listings
-  const [featuredJobs, setFeaturedJobs] = useState<JobListing[]>([]);
-  const [recommendedJobs, setRecommendedJobs] = useState<JobListing[]>([]);
-  const [recentJobs, setRecentJobs] = useState<JobListing[]>([]);
-  const [loading, setLoading] = useState(true);
-  
   // Hooks
   const navigate = useNavigate();
   const { role } = useUser();
   const { toast } = useToast();
+  
+  // API calls for different job types
+  const { 
+    data: featuredPage, 
+    isLoading: featuredLoading 
+  } = useVacancies({ is_featured: true }, 1, 10);
+  
+  const { 
+    data: recommendedPage, 
+    isLoading: recommendedLoading 
+  } = useVacancies({ is_recommended: true }, 1, 10);
+  
+  const { 
+    data: recentPage, 
+    isLoading: recentLoading 
+  } = useVacancies({}, 1, 10);
 
   useEffect(() => {
     // Redirect to my-jobs if user is a recruiter
@@ -60,47 +70,18 @@ const Home = () => {
       navigate('/my-jobs');
       return;
     }
-    
-    // Fetch job data
-    loadJobData();
   }, [navigate, role]);
 
-  /**
-   * Load job data from API or mock data
-   * In a real app, this would make API calls to fetch the different job categories
-   */
-  const loadJobData = async () => {
-    setLoading(true);
-    
-    try {
-      // TODO: Replace with actual API calls
-      // Expected API endpoints:
-      // GET /api/jobs/featured - Expected response: { jobs: JobListing[] }
-      // GET /api/jobs/recommended - Expected response: { jobs: JobListing[] }
-      // GET /api/jobs/recent - Expected response: { jobs: JobListing[] }
-      
-      // Using setTimeout to simulate API delay
-      setTimeout(() => {
-        setFeaturedJobs(getFeaturedJobs());
-        setRecommendedJobs(getRecommendedJobs());
-        setRecentJobs(getRecentJobs());
-        setLoading(false);
-      }, 500);
-    } catch (error) {
-      console.error('Failed to load jobs:', error);
-      toast({
-        title: "Ошибка загрузки",
-        description: "Не удалось загрузить список вакансий",
-        variant: "destructive",
-      });
-      setLoading(false);
-    }
-  };
+  const loading = featuredLoading || recommendedLoading || recentLoading;
 
   // Show loading spinner while data is being fetched
   if (loading) {
     return <LoadingSpinner />;
   }
+
+  const featuredJobs = featuredPage?.items || [];
+  const recommendedJobs = recommendedPage?.items || [];
+  const recentJobs = recentPage?.items || [];
 
   return (
     <div className="container-custom px-4">
@@ -110,9 +91,17 @@ const Home = () => {
       </section>
 
       {/* Job listing sections */}
-      <JobSection title="Рекомендуемые вакансии" jobs={recommendedJobs} />
-      <JobSection title="Выделенные вакансии" jobs={featuredJobs} featured={true} />
-      <JobSection title="Новые вакансии" jobs={recentJobs} />
+      {recommendedJobs.length > 0 && (
+        <JobSection title="Рекомендуемые вакансии" jobs={recommendedJobs} />
+      )}
+      
+      {featuredJobs.length > 0 && (
+        <JobSection title="Выделенные вакансии" jobs={featuredJobs} featured={true} />
+      )}
+      
+      {recentJobs.length > 0 && (
+        <JobSection title="Новые вакансии" jobs={recentJobs} />
+      )}
     </div>
   );
 };
