@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { PlusCircle, CircleEllipsis, Eye, Search, Pencil, ExternalLink, Clock, CheckCircle, AlertCircle, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -105,9 +106,9 @@ const MyJobs = () => {
   };
   
   /**
-   * Update job status via API
+   * Update job status via API - note: only status changes allowed by business rules
    */
-  const updateJobStatus = async (job: Vacancy, newStatus: 'DRAFT' | 'PENDING' | 'ACTIVE' | 'DELETED') => {
+  const updateJobStatus = async (job: Vacancy, newStatus: 'DRAFT' | 'PENDING' | 'DELETED') => {
     try {
       await api.updateVacancy(job.id, {
         title: job.title,
@@ -129,9 +130,10 @@ const MyJobs = () => {
       refetch();
       
       // Show success message
+      const statusMessage = newStatus === 'PENDING' ? 'отправлена на проверку' : getStatusLabel(newStatus).toLowerCase();
       toast({
         title: "Статус обновлен",
-        description: `Вакансия ${getStatusLabel(newStatus).toLowerCase()}`,
+        description: `Вакансия ${statusMessage}`,
         duration: 5000,
       });
     } catch (error) {
@@ -264,10 +266,10 @@ const MyJobs = () => {
                   </div>
                 </div>
                 
-                {/* Action buttons */}
+                {/* Action buttons based on status */}
                 <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                   <div className="flex flex-col gap-2">
-                    {/* Primary action based on job status */}
+                    {/* Primary action based on job status and business rules */}
                     <div>
                       {job.status === 'ACTIVE' && (
                         <Button 
@@ -277,57 +279,91 @@ const MyJobs = () => {
                           className="w-full"
                         >
                           <AlertCircle className="h-4 w-4 mr-2" />
-                          Снять с публикации
+                          Архивировать
                         </Button>
                       )}
                       
+                      {job.status === 'PENDING' && (
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => updateJobStatus(job, 'DRAFT')}
+                            className="flex items-center justify-center"
+                          >
+                            <Clock className="h-4 w-4 mr-2" />
+                            В черновик
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => updateJobStatus(job, 'DELETED')}
+                            className="flex items-center justify-center"
+                          >
+                            <AlertCircle className="h-4 w-4 mr-2" />
+                            Удалить
+                          </Button>
+                        </div>
+                      )}
+                      
                       {job.status === 'DELETED' && (
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => updateJobStatus(job, 'ACTIVE')}
-                          className="w-full"
-                        >
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          Опубликовать
-                        </Button>
+                        <div className="text-center py-2">
+                          <span className="text-sm text-gray-500 dark:text-gray-400">
+                            Вакансия архивирована
+                          </span>
+                        </div>
                       )}
                       
                       {job.status === 'DRAFT' && (
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => updateJobStatus(job, 'ACTIVE')}
+                          onClick={() => updateJobStatus(job, 'PENDING')}
                           className="w-full"
                         >
                           <CheckCircle className="h-4 w-4 mr-2" />
-                          Опубликовать черновик
+                          Отправить на проверку
                         </Button>
                       )}
                     </div>
                     
-                    {/* Secondary actions */}
-                    <div className="grid grid-cols-2 gap-2">
+                    {/* Secondary actions - available for all non-deleted */}
+                    {job.status !== 'DELETED' && (
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => navigate(`/job/${job.id}`)}
+                          className="flex items-center justify-center"
+                        >
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Просмотр
+                        </Button>
+                        
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => navigate(`/edit-job/${job.id}`)}
+                          className="flex items-center justify-center"
+                        >
+                          <Pencil className="h-4 w-4 mr-2" />
+                          Редактировать
+                        </Button>
+                      </div>
+                    )}
+                    
+                    {/* Additional actions for ACTIVE and PENDING statuses */}
+                    {(job.status === 'ACTIVE' || job.status === 'PENDING') && (
                       <Button 
                         variant="ghost" 
                         size="sm"
-                        onClick={() => navigate(`/job/${job.id}`)}
-                        className="flex items-center justify-center"
+                        onClick={() => updateJobStatus(job, 'DRAFT')}
+                        className="w-full"
                       >
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        Просмотр
+                        <Clock className="h-4 w-4 mr-2" />
+                        Перевести в черновик
                       </Button>
-                      
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => navigate(`/edit-job/${job.id}`)}
-                        className="flex items-center justify-center"
-                      >
-                        <Pencil className="h-4 w-4 mr-2" />
-                        Редактировать
-                      </Button>
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>

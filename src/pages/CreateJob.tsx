@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -20,6 +19,7 @@ import { useSkills } from '@/hooks/useSkills';
 import { api } from '@/utils/api';
 import { JobType } from '@/types/vacancy';
 import { CircleEllipsis } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 const CreateJob = () => {
   const [formData, setFormData] = useState({
@@ -37,7 +37,6 @@ const CreateJob = () => {
     skills: [] as number[],
     is_recommended: false,
     is_featured: false,
-    status: 'DRAFT' as 'DRAFT' | 'ACTIVE',
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -127,13 +126,9 @@ const CreateJob = () => {
 
       await api.createVacancy(vacancyData);
       
-      const statusMessage = formData.status === 'ACTIVE' 
-        ? 'опубликована' 
-        : 'сохранена как черновик';
-          
       toast({
         title: 'Вакансия создана',
-        description: `Ваша вакансия успешно ${statusMessage}${formData.is_featured ? ' и будет выделена в результатах поиска' : ''}`,
+        description: `Ваша вакансия отправлена на проверку${formData.is_featured ? ' и будет выделена после одобрения' : ''}`,
         duration: 5000,
       });
       navigate('/my-jobs');
@@ -407,19 +402,20 @@ const CreateJob = () => {
               </div>
               
               <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <Label htmlFor="status">Статус публикации</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) => handleSelectChange(value as 'DRAFT' | 'ACTIVE', 'status')}
-                >
-                  <SelectTrigger id="status">
-                    <SelectValue placeholder="Выберите статус" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-200 shadow-lg">
-                    <SelectItem value="DRAFT">Сохранить как черновик</SelectItem>
-                    <SelectItem value="ACTIVE">Опубликовать сразу</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                  <div className="flex items-start">
+                    <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 mr-2 flex-shrink-0" />
+                    <div>
+                      <h4 className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                        Проверка модерации
+                      </h4>
+                      <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                        Все новые вакансии отправляются на проверку модератора перед публикацией. 
+                        Обычно проверка занимает несколько часов.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -438,9 +434,7 @@ const CreateJob = () => {
               disabled={isSubmitting || companies.length === 0}
               className="flex-1"
             >
-              {isSubmitting ? 'Публикация...' : formData.status === 'ACTIVE' 
-                ? 'Опубликовать вакансию' 
-                : 'Сохранить черновик'}
+              {isSubmitting ? 'Отправка на проверку...' : 'Создать вакансию'}
             </Button>
           </div>
         </form>

@@ -20,6 +20,7 @@ import { useSkills } from '@/hooks/useSkills';
 import { useVacancy } from '@/hooks/useVacancy';
 import { api } from '@/utils/api';
 import { JobType } from '@/types/vacancy';
+import { AlertCircle } from 'lucide-react';
 
 const EditJob = () => {
   const { id } = useParams<{ id: string }>();
@@ -164,7 +165,7 @@ const EditJob = () => {
       
       toast({
         title: 'Вакансия обновлена',
-        description: `Изменения успешно сохранены. ${formData.is_featured ? 'Вакансия выделена в результатах поиска.' : ''}${formData.is_recommended ? ' Вакансия добавлена в рекомендуемые.' : ''}`,
+        description: `Изменения сохранены и вакансия отправлена на повторную проверку модератора.${formData.is_featured ? ' Вакансия будет выделена после одобрения.' : ''}`,
         duration: 5000,
       });
       navigate('/my-jobs');
@@ -438,9 +439,20 @@ const EditJob = () => {
               </div>
               
               <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
-                <p className="text-sm text-gray-700 dark:text-gray-300">
-                  <strong>Обратите внимание:</strong> Выделение вакансии и добавление в рекомендуемые тарифицируются отдельно.
-                </p>
+                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+                  <div className="flex items-start">
+                    <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5 mr-2 flex-shrink-0" />
+                    <div>
+                      <h4 className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                        Повторная модерация
+                      </h4>
+                      <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                        После сохранения изменений вакансия будет отправлена на повторную проверку 
+                        модератора и временно снята с публикации до одобрения.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
