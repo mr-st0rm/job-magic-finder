@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { getJobById } from '@/data/jobs';
 import { CircleEllipsis } from 'lucide-react';
 import { 
   Select,
@@ -15,79 +14,77 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from '@/lib/utils';
-import { useQuery } from '@tanstack/react-query';
-import { companiesApi, Company } from '@/utils/companiesApi';
+import { useCompanies } from '@/hooks/useCompanies';
+import { useCategories } from '@/hooks/useCategories';
+import { useSkills } from '@/hooks/useSkills';
+import { useVacancy } from '@/hooks/useVacancy';
+import { api } from '@/utils/api';
+import { JobType } from '@/types/vacancy';
 
 const EditJob = () => {
   const { id } = useParams<{ id: string }>();
+  const vacancyId = id ? parseInt(id) : 0;
+  
   const [formData, setFormData] = useState({
     title: '',
-    company_id: '', // Изменено с company на company_id
+    company_id: 0,
     location: '',
-    type: '',
-    salary: '',
+    work_type: '' as JobType | '',
+    salary_min: '' as string,
+    salary_max: '' as string,
+    salary_currency: 'RUB',
     description: '',
     requirements: '',
     responsibilities: '',
-    contact_name: '',
-    contact_phone: '',
-    contact_email: '',
-    contact_telegram: '',
-    isPremium: false,
-    isFeatured: false,
-    status: 'published' as 'published' | 'archived',
-    featured: false,
+    category_id: 0,
+    skills: [] as number[],
+    is_recommended: false,
+    is_featured: false,
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Загружаем список компаний пользователя
-  const { data: companies = [], isLoading: isLoadingCompanies } = useQuery({
-    queryKey: ['my-companies'],
-    queryFn: companiesApi.getMyCompanies,
-  });
+  // Load reference data and vacancy
+  const { data: companies = [], isLoading: isLoadingCompanies } = useCompanies();
+  const { data: categories = [], isLoading: isLoadingCategories } = useCategories();
+  const { data: skills = [], isLoading: isLoadingSkills } = useSkills();
+  const { data: vacancy, isLoading: isLoadingVacancy, error: vacancyError } = useVacancy(vacancyId);
   
   useEffect(() => {
-    if (id) {
-      setIsLoading(true);
-      setTimeout(() => {
-        const job = getJobById(id);
-        if (job) {
-          setFormData({
-            title: job.title,
-            company_id: companies.length > 0 ? companies[0].id : '', // Выбираем первую компанию по умолчанию
-            location: job.location,
-            type: job.type,
-            salary: job.salary,
-            description: job.description,
-            requirements: job.requirements.join('\n'),
-            responsibilities: job.responsibilities.join('\n'),
-            contact_name: 'HR Менеджер',
-            contact_phone: '+7 (999) 123-45-67',
-            contact_email: `hr@${job.company.toLowerCase().replace(/\s+/g, '')}.com`,
-            contact_telegram: `@hr_${job.company.toLowerCase().replace(/\s+/g, '')}`,
-            isPremium: job.id === '1' || job.id === '3',
-            isFeatured: job.featured || false,
-            status: 'published',
-            featured: job.featured || false,
-          });
-        } else {
-          toast({
-            title: 'Ошибка',
-            description: 'Вакансия не найдена',
-            variant: 'destructive',
-            duration: 5000,
-          });
-          navigate('/my-jobs');
-        }
-        setIsLoading(false);
-      }, 500);
+    if (vacancy) {
+      setFormData({
+        title: vacancy.title,
+        company_id: vacancy.category.id, // Note: API doesn't return company, using category id as placeholder
+        location: vacancy.location || '',
+        work_type: vacancy.work_type,
+        salary_min: vacancy.salary_min ? vacancy.salary_min.toString() : '',
+        salary_max: vacancy.salary_max ? vacancy.salary_max.toString() : '',
+        salary_currency: vacancy.salary_currency || 'RUB',
+        description: vacancy.description,
+        requirements: vacancy.requirements,
+        responsibilities: vacancy.responsibilities,
+        category_id: vacancy.category.id,
+        skills: vacancy.skills.map(vs => vs.skill.id),
+        is_recommended: vacancy.is_recommended,
+        is_featured: vacancy.is_featured,
+      });
     }
-  }, [id, navigate, toast, companies]);
+  }, [vacancy]);
+
+  useEffect(() => {
+    if (vacancyError) {
+      toast({
+        title: 'Ошибка',
+        description: 'Вакансия не найдена',
+        variant: 'destructive',
+        duration: 5000,
+      });
+      navigate('/my-jobs');
+    }
+  }, [vacancyError, navigate, toast]);
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { id, value } = e.target;
@@ -103,7 +100,10 @@ const EditJob = () => {
   };
   
   const handleSelectChange = (value: string, fieldName: string) => {
-    setFormData(prev => ({ ...prev, [fieldName]: value }));
+    const processedValue = fieldName === 'company_id' || fieldName === 'category_id' 
+      ? parseInt(value) 
+      : value;
+    setFormData(prev => ({ ...prev, [fieldName]: processedValue }));
     
     if (errors[fieldName]) {
       setErrors(prev => {
@@ -125,54 +125,65 @@ const EditJob = () => {
     if (!formData.title.trim()) newErrors.title = 'Введите название должности';
     if (!formData.company_id) newErrors.company_id = 'Выберите компанию';
     if (!formData.location.trim()) newErrors.location = 'Введите местоположение';
-    if (!formData.type) newErrors.type = 'Выберите тип занятости';
-    
-    if (!formData.salary.trim()) {
-      newErrors.salary = 'Введите информацию о зарплате';
-    } else if (!/\d/.test(formData.salary)) {
-      newErrors.salary = 'Зарплата должна содержать хотя бы одну цифру';
-    }
+    if (!formData.work_type) newErrors.work_type = 'Выберите тип занятости';
+    if (!formData.category_id) newErrors.category_id = 'Выберите категорию';
     
     if (!formData.description.trim()) newErrors.description = 'Добавьте описание вакансии';
     if (!formData.requirements.trim()) newErrors.requirements = 'Укажите требования';
     if (!formData.responsibilities.trim()) newErrors.responsibilities = 'Укажите обязанности';
     
-    if (!formData.contact_name.trim()) newErrors.contact_name = 'Укажите контактное лицо';
-    
-    const hasEmail = formData.contact_email.trim() !== '';
-    const hasPhone = formData.contact_phone.trim() !== '';
-    const hasTelegram = formData.contact_telegram.trim() !== '';
-    
-    if (!hasEmail && !hasPhone && !hasTelegram) {
-      newErrors.contact_email = 'Укажите хотя бы один способ связи';
-    }
-    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) return;
     
     setIsSubmitting(true);
     
-    // TODO: Отправить данные на сервер
-    console.log('Обновление вакансии с данными:', formData);
-    
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      const updateData = {
+        title: formData.title,
+        description: formData.description,
+        requirements: formData.requirements,
+        responsibilities: formData.responsibilities,
+        salary_min: formData.salary_min ? parseFloat(formData.salary_min) : null,
+        salary_max: formData.salary_max ? parseFloat(formData.salary_max) : null,
+        salary_currency: formData.salary_currency || null,
+        work_type: formData.work_type as JobType,
+        location: formData.location || null,
+        is_recommended: formData.is_recommended,
+        is_featured: formData.is_featured,
+        category_id: formData.category_id,
+        skills: formData.skills.length > 0 ? formData.skills : null,
+      };
+
+      await api.updateVacancy(vacancyId, updateData);
+      
       toast({
         title: 'Вакансия обновлена',
-        description: `Изменения успешно сохранены. ${formData.isPremium ? 'Вакансия выделена в результатах поиска.' : ''}${formData.isFeatured ? ' Вакансия добавлена в рекомендуемые.' : ''}`,
+        description: `Изменения успешно сохранены. ${formData.is_featured ? 'Вакансия выделена в результатах поиска.' : ''}${formData.is_recommended ? ' Вакансия добавлена в рекомендуемые.' : ''}`,
         duration: 5000,
       });
       navigate('/my-jobs');
-    }, 1000);
+    } catch (error) {
+      console.error('Error updating vacancy:', error);
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось обновить вакансию',
+        variant: 'destructive',
+        duration: 5000,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
-  if (isLoading || isLoadingCompanies) {
+  const isLoading = isLoadingCompanies || isLoadingCategories || isLoadingSkills || isLoadingVacancy;
+  
+  if (isLoading) {
     return (
       <div className="container-custom px-4 py-8 flex justify-center">
         <CircleEllipsis className="h-8 w-8 animate-spin text-primary" />
@@ -225,7 +236,7 @@ const EditJob = () => {
                     </div>
                   ) : (
                     <Select
-                      value={formData.company_id}
+                      value={formData.company_id ? formData.company_id.toString() : ''}
                       onValueChange={(value) => handleSelectChange(value, 'company_id')}
                     >
                       <SelectTrigger className={errors.company_id ? 'border-destructive' : ''}>
@@ -233,7 +244,7 @@ const EditJob = () => {
                       </SelectTrigger>
                       <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-200 shadow-lg">
                         {companies.map((company) => (
-                          <SelectItem key={company.id} value={company.id}>
+                          <SelectItem key={company.id} value={company.id.toString()}>
                             {company.name}
                           </SelectItem>
                         ))}
@@ -243,6 +254,28 @@ const EditJob = () => {
                   {errors.company_id && <p className="text-xs text-destructive mt-1">{errors.company_id}</p>}
                 </div>
                 
+                <div>
+                  <Label htmlFor="category_id" className={errors.category_id ? 'text-destructive' : ''}>Категория</Label>
+                  <Select
+                    value={formData.category_id ? formData.category_id.toString() : ''}
+                    onValueChange={(value) => handleSelectChange(value, 'category_id')}
+                  >
+                    <SelectTrigger className={errors.category_id ? 'border-destructive' : ''}>
+                      <SelectValue placeholder="Выберите категорию" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-200 shadow-lg">
+                      {categories.map((category) => (
+                        <SelectItem key={category.id} value={category.id.toString()}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.category_id && <p className="text-xs text-destructive mt-1">{errors.category_id}</p>}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="location" className={errors.location ? 'text-destructive' : ''}>Местоположение</Label>
                   <Input 
@@ -254,38 +287,66 @@ const EditJob = () => {
                   />
                   {errors.location && <p className="text-xs text-destructive mt-1">{errors.location}</p>}
                 </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
                 <div>
-                  <Label htmlFor="type" className={errors.type ? 'text-destructive' : ''}>Тип занятости</Label>
+                  <Label htmlFor="work_type" className={errors.work_type ? 'text-destructive' : ''}>Тип занятости</Label>
                   <Select
-                    value={formData.type}
-                    onValueChange={(value) => handleSelectChange(value, 'type')}
+                    value={formData.work_type}
+                    onValueChange={(value) => handleSelectChange(value, 'work_type')}
                   >
-                    <SelectTrigger className={errors.type ? 'border-destructive' : ''}>
+                    <SelectTrigger className={errors.work_type ? 'border-destructive' : ''}>
                       <SelectValue placeholder="Выберите тип" />
                     </SelectTrigger>
                     <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-200 shadow-lg">
-                      <SelectItem value="Полная занятость">Полная занятость</SelectItem>
-                      <SelectItem value="Частичная занятость">Частичная занятость</SelectItem>
-                      <SelectItem value="Проектная работа">Проектная работа</SelectItem>
-                      <SelectItem value="Стажировка">Стажировка</SelectItem>
+                      <SelectItem value="FULL_TIME">Полная занятость</SelectItem>
+                      <SelectItem value="PART_TIME">Частичная занятость</SelectItem>
+                      <SelectItem value="CONTRACT">Проектная работа</SelectItem>
+                      <SelectItem value="FREELANCE">Фриланс</SelectItem>
+                      <SelectItem value="REMOTE">Удаленная работа</SelectItem>
                     </SelectContent>
                   </Select>
-                  {errors.type && <p className="text-xs text-destructive mt-1">{errors.type}</p>}
+                  {errors.work_type && <p className="text-xs text-destructive mt-1">{errors.work_type}</p>}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="salary_min">Зарплата от</Label>
+                  <Input 
+                    id="salary_min" 
+                    type="number"
+                    placeholder="150000" 
+                    value={formData.salary_min}
+                    onChange={handleChange}
+                  />
                 </div>
                 
                 <div>
-                  <Label htmlFor="salary" className={errors.salary ? 'text-destructive' : ''}>Зарплата</Label>
+                  <Label htmlFor="salary_max">Зарплата до</Label>
                   <Input 
-                    id="salary" 
-                    placeholder="Например: 150 000 - 200 000 ₽" 
-                    value={formData.salary}
+                    id="salary_max" 
+                    type="number"
+                    placeholder="200000" 
+                    value={formData.salary_max}
                     onChange={handleChange}
-                    className={errors.salary ? 'border-destructive' : ''}
                   />
-                  {errors.salary && <p className="text-xs text-destructive mt-1">{errors.salary}</p>}
+                </div>
+                
+                <div>
+                  <Label htmlFor="salary_currency">Валюта</Label>
+                  <Select
+                    value={formData.salary_currency}
+                    onValueChange={(value) => handleSelectChange(value, 'salary_currency')}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Валюта" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-200 shadow-lg">
+                      <SelectItem value="RUB">₽ Рубль</SelectItem>
+                      <SelectItem value="USD">$ Доллар</SelectItem>
+                      <SelectItem value="EUR">€ Евро</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
             </div>
@@ -306,7 +367,6 @@ const EditJob = () => {
                   value={formData.description}
                   onChange={handleChange}
                   className={errors.description ? 'border-destructive' : ''}
-                  autoResize={true}
                 />
                 {errors.description && <p className="text-xs text-destructive mt-1">{errors.description}</p>}
               </div>
@@ -320,11 +380,7 @@ const EditJob = () => {
                   value={formData.requirements}
                   onChange={handleChange}
                   className={errors.requirements ? 'border-destructive' : ''}
-                  autoResize={true}
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Каждое требование с новой строки
-                </p>
                 {errors.requirements && <p className="text-xs text-destructive mt-1">{errors.requirements}</p>}
               </div>
               
@@ -337,73 +393,9 @@ const EditJob = () => {
                   value={formData.responsibilities}
                   onChange={handleChange}
                   className={errors.responsibilities ? 'border-destructive' : ''}
-                  autoResize={true}
                 />
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Каждая обязанность с новой строки
-                </p>
                 {errors.responsibilities && <p className="text-xs text-destructive mt-1">{errors.responsibilities}</p>}
               </div>
-            </div>
-          </div>
-          
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-              Контактная информация
-            </h2>
-            
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="contact_name" className={errors.contact_name ? 'text-destructive' : ''}>Контактное лицо</Label>
-                <Input 
-                  id="contact_name" 
-                  placeholder="Имя и фамилия" 
-                  value={formData.contact_name}
-                  onChange={handleChange}
-                  className={errors.contact_name ? 'border-destructive' : ''}
-                />
-                {errors.contact_name && <p className="text-xs text-destructive mt-1">{errors.contact_name}</p>}
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <Label htmlFor="contact_phone" className={errors.contact_phone ? 'text-destructive' : ''}>Телефон (опционально)</Label>
-                  <Input 
-                    id="contact_phone" 
-                    placeholder="+7 (999) 123-45-67" 
-                    value={formData.contact_phone}
-                    onChange={handleChange}
-                    className={errors.contact_phone ? 'border-destructive' : ''}
-                  />
-                  {errors.contact_phone && <p className="text-xs text-destructive mt-1">{errors.contact_phone}</p>}
-                </div>
-                
-                <div>
-                  <Label htmlFor="contact_email" className={errors.contact_email ? 'text-destructive' : ''}>Email (опционально)</Label>
-                  <Input 
-                    id="contact_email" 
-                    type="email" 
-                    placeholder="example@company.com" 
-                    value={formData.contact_email}
-                    onChange={handleChange}
-                    className={errors.contact_email ? 'border-destructive' : ''}
-                  />
-                  {errors.contact_email && <p className="text-xs text-destructive mt-1">{errors.contact_email}</p>}
-                </div>
-                
-                <div>
-                  <Label htmlFor="contact_telegram" className={errors.contact_telegram ? 'text-destructive' : ''}>Telegram (опционально)</Label>
-                  <Input 
-                    id="contact_telegram" 
-                    placeholder="@username" 
-                    value={formData.contact_telegram}
-                    onChange={handleChange}
-                    className={errors.contact_telegram ? 'border-destructive' : ''}
-                  />
-                  {errors.contact_telegram && <p className="text-xs text-destructive mt-1">{errors.contact_telegram}</p>}
-                </div>
-              </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">* Укажите хотя бы один способ связи (телефон, email или Telegram)</p>
             </div>
           </div>
           
@@ -416,32 +408,32 @@ const EditJob = () => {
               <div className="flex items-center">
                 <input
                   type="checkbox"
-                  id="isPremium"
-                  checked={formData.isPremium}
+                  id="is_featured"
+                  checked={formData.is_featured}
                   onChange={handleCheckboxChange}
                   className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
                 />
                 <label
-                  htmlFor="isPremium"
+                  htmlFor="is_featured"
                   className="ml-2 block text-sm text-gray-900 dark:text-gray-100"
                 >
-                  Выделение вакансии в поиске (платно)
+                  Выделить вакансию (рекомендуемая)
                 </label>
               </div>
               
               <div className="flex items-center">
                 <input
                   type="checkbox"
-                  id="isFeatured"
-                  checked={formData.isFeatured}
+                  id="is_recommended"
+                  checked={formData.is_recommended}
                   onChange={handleCheckboxChange}
                   className="h-4 w-4 text-primary border-gray-300 rounded focus:ring-primary"
                 />
                 <label
-                  htmlFor="isFeatured"
+                  htmlFor="is_recommended"
                   className="ml-2 block text-sm text-gray-900 dark:text-gray-100"
                 >
-                  Добавить в рекомендуемые вакансии (платно)
+                  Добавить в рекомендуемые вакансии
                 </label>
               </div>
               

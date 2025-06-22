@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { PlusCircle, CircleEllipsis, Eye, Search, Pencil, ExternalLink, Clock, CheckCircle, AlertCircle, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { getRecentJobs, JobListing } from '@/data/jobs';
 import { useUser } from '@/contexts/UserContext';
 import { Input } from '@/components/ui/input';
 import { 
@@ -15,24 +14,15 @@ import {
 } from "@/components/ui/select";
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-
-/**
- * Extended job type with additional fields for recruiter dashboard
- */
-interface RecruiterJobStats extends JobListing {
-  views: number;                               // Number of job views
-  contactsViewed: number;                      // Number of times contacts were viewed
-  status: 'draft' | 'review' | 'published' | 'archived';  // Current job status
-}
+import { useVacancies } from '@/hooks/useVacancies';
+import { Vacancy } from '@/types/vacancy';
+import { api } from '@/utils/api';
 
 /**
  * MyJobs component - Recruiter dashboard for job management
  */
 const MyJobs = () => {
   // State
-  const [jobs, setJobs] = useState<RecruiterJobStats[]>([]);
-  const [filteredJobs, setFilteredJobs] = useState<RecruiterJobStats[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   
@@ -40,6 +30,30 @@ const MyJobs = () => {
   const navigate = useNavigate();
   const { role } = useUser();
   const { toast } = useToast();
+  
+  // Load vacancies with filters
+  const { 
+    data: vacanciesPage, 
+    isLoading: loading, 
+    refetch 
+  } = useVacancies({
+    title: searchQuery || null,
+  });
+  
+  const jobs = vacanciesPage?.items || [];
+  
+  /**
+   * Filter jobs by status and search query
+   */
+  const filteredJobs = jobs.filter(job => {
+    // Filter by status
+    if (statusFilter !== 'all' && statusFilter !== job.status) {
+      return false;
+    }
+    
+    // Filter by search query is handled by API
+    return true;
+  });
   
   /**
    * Load jobs on component mount and redirect if not a recruiter
@@ -50,69 +64,17 @@ const MyJobs = () => {
       navigate('/profile');
       return;
     }
-    
-    // Load jobs data
-    fetchJobs();
   }, [navigate, role]);
-
-  /**
-   * Fetch recruiter's jobs
-   * TODO: Replace with actual API call
-   * Expected request: GET /api/recruiter/jobs
-   * Expected response: { jobs: RecruiterJobStats[] }
-   */
-  const fetchJobs = () => {
-    setLoading(true);
-    
-    // Simulate API call with timeout
-    setTimeout(() => {
-      // Temporarily using existing jobs data with additional recruiter stats
-      const userJobs = getRecentJobs().map((job, index) => ({
-        ...job,
-        views: Math.floor(Math.random() * 100) + 10,
-        contactsViewed: Math.floor(Math.random() * 20) + 1,
-        status: ['draft', 'review', 'published', 'archived', 'published'][index % 5] as 'draft' | 'review' | 'published' | 'archived'
-      }));
-      
-      setJobs(userJobs);
-      setFilteredJobs(userJobs);
-      setLoading(false);
-    }, 500);
-  };
-
-  /**
-   * Filter jobs when search query or status filter changes
-   */
-  useEffect(() => {
-    let filtered = jobs;
-    
-    // Filter by status
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(job => job.status === statusFilter);
-    }
-    
-    // Filter by search query
-    if (searchQuery.trim() !== '') {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(job => 
-        job.title.toLowerCase().includes(query) || 
-        job.company.toLowerCase().includes(query) ||
-        job.location.toLowerCase().includes(query)
-      );
-    }
-    
-    setFilteredJobs(filtered);
-  }, [searchQuery, statusFilter, jobs]);
 
   /**
    * Get human-readable status label
    */
   const getStatusLabel = (status: string) => {
     switch(status) {
-      case 'draft': return 'Черновик';
-      case 'review': return 'На проверке';
-      case 'published': return 'Опубликована';
-      case 'archived': return 'Архивирована';
+      case 'DRAFT': return 'Черновик';
+      case 'PENDING': return 'На проверке';
+      case 'ACTIVE': return 'Опубликована';
+      case 'DELETED': return 'Архивирована';
       default: return 'Неизвестно';
     }
   };
@@ -122,10 +84,10 @@ const MyJobs = () => {
    */
   const getStatusColor = (status: string) => {
     switch(status) {
-      case 'draft': return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300';
-      case 'review': return 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-300';
-      case 'published': return 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-300';
-      case 'archived': return 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-300';
+      case 'DRAFT': return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300';
+      case 'PENDING': return 'bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-300';
+      case 'ACTIVE': return 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-300';
+      case 'DELETED': return 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-300';
       default: return 'bg-gray-100 text-gray-600';
     }
   };
@@ -135,36 +97,43 @@ const MyJobs = () => {
    */
   const getStatusIcon = (status: string) => {
     switch(status) {
-      case 'draft': return <Clock className="h-3 w-3 mr-1" />;
-      case 'review': return <AlertCircle className="h-3 w-3 mr-1" />;
-      case 'published': return <CheckCircle className="h-3 w-3 mr-1" />;
-      case 'archived': return <AlertCircle className="h-3 w-3 mr-1" />;
+      case 'DRAFT': return <Clock className="h-3 w-3 mr-1" />;
+      case 'PENDING': return <AlertCircle className="h-3 w-3 mr-1" />;
+      case 'ACTIVE': return <CheckCircle className="h-3 w-3 mr-1" />;
+      case 'DELETED': return <AlertCircle className="h-3 w-3 mr-1" />;
       default: return null;
     }
   };
   
   /**
-   * Update job status
-   * TODO: Replace with actual API call
-   * Expected request: PUT /api/jobs/{id}/status { status: string }
-   * Expected response: { success: boolean, job: RecruiterJobStats }
+   * Update job status via API
    */
-  const updateJobStatus = (jobId: string, newStatus: 'draft' | 'review' | 'published' | 'archived') => {
-    // Update local state
-    setJobs(prevJobs => 
-      prevJobs.map(job => 
-        job.id === jobId ? { ...job, status: newStatus } : job
-      )
-    );
-    
-    // Show success message
-    toast({
-      title: "Статус обновлен",
-      description: `Вакансия ${getStatusLabel(newStatus).toLowerCase()}`,
-      duration: 5000,
-    });
-    
-    // TODO: Send API request to update status
+  const updateJobStatus = async (job: Vacancy, newStatus: 'DRAFT' | 'PENDING' | 'ACTIVE' | 'DELETED') => {
+    try {
+      await api.updateVacancy(job.id, {
+        ...job,
+        status: newStatus,
+        category_id: job.category.id,
+        skills: job.skills.map(vs => vs.skill.id),
+      });
+      
+      // Refresh the list
+      refetch();
+      
+      // Show success message
+      toast({
+        title: "Статус обновлен",
+        description: `Вакансия ${getStatusLabel(newStatus).toLowerCase()}`,
+        duration: 5000,
+      });
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось обновить статус вакансии",
+        variant: "destructive",
+        duration: 5000,
+      });
+    }
   };
 
   // Show loading spinner while data is being fetched
@@ -216,10 +185,10 @@ const MyJobs = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Все статусы</SelectItem>
-                <SelectItem value="draft">Черновики</SelectItem>
-                <SelectItem value="review">На проверке</SelectItem>
-                <SelectItem value="published">Опубликованные</SelectItem>
-                <SelectItem value="archived">Архивированные</SelectItem>
+                <SelectItem value="DRAFT">Черновики</SelectItem>
+                <SelectItem value="PENDING">На проверке</SelectItem>
+                <SelectItem value="ACTIVE">Опубликованные</SelectItem>
+                <SelectItem value="DELETED">Архивированные</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -235,24 +204,16 @@ const MyJobs = () => {
                 key={job.id} 
                 className={cn(
                   "bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm transition-transform hover:translate-y-[-2px]",
-                  job.featured && "ring-2 ring-primary/20 bg-primary/5 dark:bg-primary/10"
+                  job.is_featured && "ring-2 ring-primary/20 bg-primary/5 dark:bg-primary/10"
                 )}
               >
                 {/* Job card header */}
                 <div className="flex items-start">
-                  {/* Company logo */}
+                  {/* Category icon as placeholder */}
                   <div className="w-12 h-12 rounded-md bg-gray-100 dark:bg-gray-700 flex items-center justify-center overflow-hidden mr-3">
-                    {job.logo ? (
-                      <img 
-                        src={job.logo} 
-                        alt={`${job.company} logo`} 
-                        className="w-8 h-8 object-contain"
-                      />
-                    ) : (
-                      <span className="text-lg font-bold text-gray-500">
-                        {job.company.charAt(0)}
-                      </span>
-                    )}
+                    <span className="text-lg font-bold text-gray-500">
+                      {job.category.name.charAt(0)}
+                    </span>
                   </div>
                   
                   {/* Job details */}
@@ -268,10 +229,10 @@ const MyJobs = () => {
                     </div>
                     
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {job.location} • {job.type}
+                      {job.location} • {job.work_type}
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      Опубликовано {job.postedAt}
+                      {job.category.name}
                     </p>
                     
                     {/* Stats counters */}
@@ -279,7 +240,7 @@ const MyJobs = () => {
                       <div className="flex flex-col items-center py-2 px-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         <div className="flex items-center gap-1">
                           <Eye className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                          <span className="font-medium text-gray-900 dark:text-white">{job.views}</span>
+                          <span className="font-medium text-gray-900 dark:text-white">{job.job_views_count}</span>
                         </div>
                         <span className="text-xs text-gray-500 dark:text-gray-400">Просмотры</span>
                       </div>
@@ -287,7 +248,7 @@ const MyJobs = () => {
                       <div className="flex flex-col items-center py-2 px-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         <div className="flex items-center gap-1">
                           <UserPlus className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-                          <span className="font-medium text-gray-900 dark:text-white">{job.contactsViewed}</span>
+                          <span className="font-medium text-gray-900 dark:text-white">{job.job_contact_views_count}</span>
                         </div>
                         <span className="text-xs text-gray-500 dark:text-gray-400">Контакты</span>
                       </div>
@@ -300,11 +261,11 @@ const MyJobs = () => {
                   <div className="flex flex-col gap-2">
                     {/* Primary action based on job status */}
                     <div>
-                      {job.status === 'published' && (
+                      {job.status === 'ACTIVE' && (
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => updateJobStatus(job.id, 'archived')}
+                          onClick={() => updateJobStatus(job, 'DELETED')}
                           className="w-full"
                         >
                           <AlertCircle className="h-4 w-4 mr-2" />
@@ -312,11 +273,11 @@ const MyJobs = () => {
                         </Button>
                       )}
                       
-                      {job.status === 'archived' && (
+                      {job.status === 'DELETED' && (
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => updateJobStatus(job.id, 'published')}
+                          onClick={() => updateJobStatus(job, 'ACTIVE')}
                           className="w-full"
                         >
                           <CheckCircle className="h-4 w-4 mr-2" />
@@ -324,11 +285,11 @@ const MyJobs = () => {
                         </Button>
                       )}
                       
-                      {job.status === 'draft' && (
+                      {job.status === 'DRAFT' && (
                         <Button 
                           variant="outline" 
                           size="sm"
-                          onClick={() => updateJobStatus(job.id, 'published')}
+                          onClick={() => updateJobStatus(job, 'ACTIVE')}
                           className="w-full"
                         >
                           <CheckCircle className="h-4 w-4 mr-2" />
