@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { PlusCircle, CircleEllipsis, Eye, Search, Pencil, ExternalLink, Clock, CheckCircle, AlertCircle, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -111,8 +110,17 @@ const MyJobs = () => {
   const updateJobStatus = async (job: Vacancy, newStatus: 'DRAFT' | 'PENDING' | 'ACTIVE' | 'DELETED') => {
     try {
       await api.updateVacancy(job.id, {
-        ...job,
-        status: newStatus,
+        title: job.title,
+        description: job.description,
+        requirements: job.requirements,
+        responsibilities: job.responsibilities,
+        salary_min: job.salary_min,
+        salary_max: job.salary_max,
+        salary_currency: job.salary_currency,
+        work_type: job.work_type,
+        location: job.location,
+        is_recommended: job.is_recommended,
+        is_featured: job.is_featured,
         category_id: job.category.id,
         skills: job.skills.map(vs => vs.skill.id),
       });
