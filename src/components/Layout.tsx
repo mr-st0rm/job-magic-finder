@@ -1,3 +1,4 @@
+
 import { ReactNode, useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { ArrowLeft, Moon, Sun, Home, Search, User, Sparkles, BriefcaseBusiness, PlusCircle } from 'lucide-react';
@@ -62,7 +63,14 @@ const Layout = ({ children }: LayoutProps) => {
       document.documentElement.classList.remove('dark');
     }
 
-    api.updateCurrentUserSettings({ settings: { dark_mode: newDarkMode } }).then();
+    api.updateCurrentUserSettings({ 
+      settings: { 
+        dark_mode: newDarkMode,
+        language: 'ru',
+        push_notifications: false,
+        email_notifications: false
+      } 
+    }).then();
   };
 
   // Define which pages are considered "main pages" to hide back button
