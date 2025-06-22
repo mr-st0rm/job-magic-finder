@@ -1,12 +1,10 @@
 
 export interface Skill {
-  id: string;
+  id: number;
   name: string;
-  created_at: string;
-  updated_at: string;
 }
 
-export interface SkillsResponse {
-  skills: Skill[];
-  total: number;
+export interface VacancySkill {
+  id: number;
+  skill: Skill;
 }

@@ -1,36 +1,45 @@
-import {createApiClient} from "@/utils/baseApi.ts";
-import { User } from "@/types/user";
-import { Vacancy } from "@/types/vacancy";
-import { SkillsResponse } from "@/types/skill";
-import { CategoriesResponse } from "@/types/category";
-import { CompaniesResponse } from "@/types/company";
+
+import { createApiClient } from "@/utils/baseApi.ts";
+import { User, UserSettingsUpdateSchema } from "@/types/user";
+import { Vacancy, VacancyCreateSchema, VacancyUpdateSchema, VacancyFilterSchema, VacanciesPage } from "@/types/vacancy";
+import { Skill } from "@/types/skill";
+import { Category } from "@/types/category";
+import { Company, CompanyCreateSchema, CompanyUpdateSchema } from "@/types/company";
 
 const apiClient = createApiClient();
 
-type UserRole = 'applicant' | 'recruiter';
-
-interface UserSettingsSchema {
-  dark_mode?: boolean;
-  language?: string;
-  push_notifications?: boolean;
-  email_notifications?: boolean;
-}
-
-interface UserSettingsUpdateSchema {
-  role?: UserRole;
-  settings?: UserSettingsSchema;
-}
-
 export const api = {
-  // UserData
+  // User endpoints
   getCurrentUser: (): Promise<User> => apiClient.get('/api/v1/user/me/'),
-  updateCurrentUserSettings: (
-      updateData: UserSettingsUpdateSchema
-  ) => apiClient.patch('/api/v1/user/me/settings/', updateData),
-  // VacanciesData
-  getVacancyById: (vacancyId: number): Promise<Vacancy> => apiClient.get(`/api/v1/vacancy/${vacancyId}/`),
-  // AdditionalData
-  getSkills: (): Promise<SkillsResponse> => apiClient.get('/api/v1/vacancy/skills/'),
-  getCategories: (): Promise<CategoriesResponse> => apiClient.get('/api/v1/vacancy/categories/'),
-  getCompanies: (): Promise<CompaniesResponse> => apiClient.get('/api/v1/vacancy/companies/'),
+  updateCurrentUserSettings: (updateData: UserSettingsUpdateSchema) => 
+    apiClient.patch('/api/v1/user/me/settings/', updateData),
+
+  // Vacancy endpoints
+  getVacanciesList: (
+    filters: VacancyFilterSchema,
+    page: number = 1,
+    size: number = 50
+  ): Promise<VacanciesPage> => 
+    apiClient.post(`/api/v1/vacancy/list/?page=${page}&size=${size}`, filters),
+  
+  getVacancyById: (vacancyId: number): Promise<Vacancy> => 
+    apiClient.get(`/api/v1/vacancy/${vacancyId}/`),
+  
+  createVacancy: (vacancyData: VacancyCreateSchema): Promise<Vacancy> => 
+    apiClient.post('/api/v1/vacancy/', vacancyData),
+  
+  updateVacancy: (vacancyId: number, vacancyData: VacancyUpdateSchema): Promise<Vacancy> => 
+    apiClient.patch(`/api/v1/vacancy/${vacancyId}/`, vacancyData),
+
+  // Reference data endpoints
+  getSkills: (): Promise<Skill[]> => apiClient.get('/api/v1/vacancy/skills/'),
+  getCategories: (): Promise<Category[]> => apiClient.get('/api/v1/vacancy/categories/'),
+  getCompanies: (): Promise<Company[]> => apiClient.get('/api/v1/vacancy/companies/'),
+
+  // Company endpoints
+  createCompany: (companyData: CompanyCreateSchema): Promise<Company> => 
+    apiClient.post('/api/v1/company/', companyData),
+  
+  updateCompany: (companyId: number, companyData: CompanyUpdateSchema): Promise<Company> => 
+    apiClient.patch(`/api/v1/company/${companyId}/`, companyData),
 };

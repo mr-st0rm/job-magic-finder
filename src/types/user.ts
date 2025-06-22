@@ -1,12 +1,25 @@
 
+export type UserRole = 'applicant' | 'recruiter';
+
+export interface UserSettings {
+  dark_mode: boolean;
+  language: string;
+  push_notifications: boolean;
+  email_notifications: boolean;
+}
+
 export interface User {
-  id: string;
+  tg_id: number;
   first_name: string;
-  last_name?: string;
-  email?: string;
-  username?: string;
-  avatar?: string;
-  role?: 'applicant' | 'recruiter';
-  created_at: string;
-  updated_at: string;
+  last_name?: string | null;
+  username?: string | null;
+  about?: string | null;
+  role: string;
+  is_active: boolean;
+  settings: UserSettings;
+}
+
+export interface UserSettingsUpdateSchema {
+  role?: UserRole | null;
+  settings?: UserSettings | null;
 }

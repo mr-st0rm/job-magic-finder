@@ -1,12 +1,31 @@
 
 export interface Company {
-  id: string;
+  id: number;
   name: string;
-  created_at: string;
-  updated_at: string;
+  description: string | null;
+  website: string | null;
+  avatar: string | null;
+  location: string | null;
+  employees_count: number | null;
+  founded_year: number | null;
 }
 
-export interface CompaniesResponse {
-  companies: Company[];
-  total: number;
+export interface CompanyCreateSchema {
+  name: string;
+  description: string | null;
+  website: string | null;
+  avatar: string | null;
+  location: string | null;
+  employees_count: number | null;
+  founded_year: number | null;
+}
+
+export interface CompanyUpdateSchema {
+  name?: string | null;
+  description?: string | null;
+  website?: string | null;
+  avatar?: string | null;
+  location?: string | null;
+  employees_count?: number | null;
+  founded_year?: number | null;
 }
