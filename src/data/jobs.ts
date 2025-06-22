@@ -381,17 +381,6 @@ export const salaryRanges = [
   'Over $130,000',
 ];
 
-export const getFeaturedJobs = () => {
-  return jobs.filter(job => job.featured).slice(0, 3);
-};
-
-export const getRecommendedJobs = () => {
-  return jobs.filter(job => job.recommended).slice(0, 3);
-};
-
-export const getRecentJobs = () => {
-  return jobs.slice(0, 6);
-};
 
 export const searchJobs = (query: string, filters: any = {}) => {
   let filtered = [...jobs];
