@@ -1,18 +1,58 @@
+
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search as SearchIcon, MapPin, Loader2, Filter, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle, DrawerFooter } from '@/components/ui/drawer';
-import { JobCardCompact } from '@/components/JobCardCompact';
-import { searchJobs, JobListing, jobCategories, jobTypes, locations, salaryRanges } from '@/data/jobs';
+import { JobCard } from '@/components/JobCard';
+import { CircleEllipsis } from 'lucide-react';
 import SearchForm from '@/components/SearchForm';
+import { useVacancies } from '@/hooks/useVacancies';
+import { mapVacancyToJobListing } from '@/utils/vacancyMapper';
+import { VacancyFilterSchema, JobType } from '@/types/vacancy';
+import { useCategories } from '@/hooks/useCategories';
 
 const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [jobs, setJobs] = useState<JobListing[]>([]);
-  const [loading, setLoading] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const { data: categories } = useCategories();
+
+  // Build filters from URL params
+  const buildFilters = (): VacancyFilterSchema => {
+    const filters: VacancyFilterSchema = {};
+    
+    const title = searchParams.get('q');
+    if (title) filters.title = title;
+    
+    const workType = searchParams.get('type');
+    if (workType) {
+      // Map from display text to JobType enum
+      const typeMap: Record<string, JobType> = {
+        'Full-time': 'FULL_TIME',
+        'Part-time': 'PART_TIME',
+        'Contract': 'CONTRACT',
+        'Remote': 'REMOTE',
+        'Freelance': 'FREELANCE'
+      };
+      const mappedType = typeMap[workType];
+      if (mappedType) filters.work_type = [mappedType];
+    }
+    
+    const categoryName = searchParams.get('category');
+    if (categoryName && categories) {
+      const category = categories.find(cat => cat.name === categoryName);
+      if (category) filters.category_ids = [category.id];
+    }
+    
+    return filters;
+  };
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const filters = buildFilters();
+  
+  const { data: vacanciesPage, isLoading } = useVacancies(filters, currentPage, 20);
+  const vacancies = vacanciesPage?.items || [];
 
   const initialFilters = {
     category: searchParams.get('category') || '',
@@ -21,23 +61,10 @@ const Search = () => {
     salary: searchParams.get('salary') || '',
   };
 
-  const [filters, setFilters] = useState(initialFilters);
+  const [uiFilters, setUiFilters] = useState(initialFilters);
 
   useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      const query = searchParams.get('q') || '';
-      const currentFilters = {
-        category: searchParams.get('category') || undefined,
-        type: searchParams.get('type') || undefined,
-        location: searchParams.get('location') || undefined,
-        salary: searchParams.get('salary') || undefined,
-      };
-      
-      const filteredJobs = searchJobs(query, currentFilters);
-      setJobs(filteredJobs);
-      setLoading(false);
-    }, 500);
+    setCurrentPage(1);
   }, [searchParams]);
 
   const handleSearch = (query: string, location: string) => {
@@ -45,7 +72,7 @@ const Search = () => {
     if (query) params.set('q', query);
     if (location) params.set('location', location);
     
-    Object.entries(filters).forEach(([key, value]) => {
+    Object.entries(uiFilters).forEach(([key, value]) => {
       if (value && value !== '') {
         params.set(key, value);
       }
@@ -55,13 +82,13 @@ const Search = () => {
   };
 
   const handleFilterChange = (key: string, value: string) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    setUiFilters(prev => ({ ...prev, [key]: value }));
   };
 
   const applyFilters = () => {
     const params = new URLSearchParams(searchParams);
     
-    Object.entries(filters).forEach(([key, value]) => {
+    Object.entries(uiFilters).forEach(([key, value]) => {
       if (value && value !== '') {
         params.set(key, value);
       } else {
@@ -74,7 +101,7 @@ const Search = () => {
   };
 
   const resetFilters = () => {
-    setFilters({
+    setUiFilters({
       category: '',
       type: '',
       location: '',
@@ -82,7 +109,13 @@ const Search = () => {
     });
   };
 
-  const hasActiveFilters = Object.values(filters).some(value => value !== '');
+  const hasActiveFilters = Object.values(uiFilters).some(value => value !== '');
+
+  // Available filter options
+  const jobTypes = ['Все типы', 'Full-time', 'Part-time', 'Contract', 'Remote', 'Freelance'];
+  const categoryNames = categories ? ['Все категории', ...categories.map(cat => cat.name)] : ['Все категории'];
+  const locations = ['Все локации', 'Москва', 'Санкт-Петербург', 'Новосибирск', 'Екатеринбург', 'Удаленно'];
+  const salaryRanges = ['Любая зарплата', 'До $1000', '$1000-$3000', '$3000-$5000', 'Свыше $5000'];
 
   return (
     <div className="container-custom px-4">
@@ -116,12 +149,13 @@ const Search = () => {
                   <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Категория</label>
                   <select 
                     className="w-full p-2 border rounded-md bg-transparent dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700"
-                    value={filters.category}
+                    value={uiFilters.category}
                     onChange={(e) => handleFilterChange('category', e.target.value)}
                   >
-                    <option value="">Все категории</option>
-                    {jobCategories.slice(1).map(category => (
-                      <option key={category} value={category}>{category}</option>
+                    {categoryNames.map(category => (
+                      <option key={category} value={category === 'Все категории' ? '' : category}>
+                        {category}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -130,12 +164,13 @@ const Search = () => {
                   <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Тип занятости</label>
                   <select 
                     className="w-full p-2 border rounded-md bg-transparent dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700"
-                    value={filters.type}
+                    value={uiFilters.type}
                     onChange={(e) => handleFilterChange('type', e.target.value)}
                   >
-                    <option value="">Все типы</option>
-                    {jobTypes.slice(1).map(type => (
-                      <option key={type} value={type}>{type}</option>
+                    {jobTypes.map(type => (
+                      <option key={type} value={type === 'Все типы' ? '' : type}>
+                        {type}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -144,12 +179,13 @@ const Search = () => {
                   <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Местоположение</label>
                   <select 
                     className="w-full p-2 border rounded-md bg-transparent dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700"
-                    value={filters.location}
+                    value={uiFilters.location}
                     onChange={(e) => handleFilterChange('location', e.target.value)}
                   >
-                    <option value="">Все локации</option>
-                    {locations.slice(1).map(loc => (
-                      <option key={loc} value={loc}>{loc}</option>
+                    {locations.map(loc => (
+                      <option key={loc} value={loc === 'Все локации' ? '' : loc}>
+                        {loc}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -158,12 +194,13 @@ const Search = () => {
                   <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Зарплата</label>
                   <select 
                     className="w-full p-2 border rounded-md bg-transparent dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700"
-                    value={filters.salary}
+                    value={uiFilters.salary}
                     onChange={(e) => handleFilterChange('salary', e.target.value)}
                   >
-                    <option value="">Любая зарплата</option>
-                    {salaryRanges.slice(1).map(range => (
-                      <option key={range} value={range}>{range}</option>
+                    {salaryRanges.map(range => (
+                      <option key={range} value={range === 'Любая зарплата' ? '' : range}>
+                        {range}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -185,14 +222,10 @@ const Search = () => {
 
       {hasActiveFilters && (
         <div className="flex flex-wrap gap-2 mb-4">
-          {Object.entries(filters).map(([key, value]) => {
+          {Object.entries(uiFilters).map(([key, value]) => {
             if (!value) return null;
             
-            let label = '';
-            if (key === 'category') label = value;
-            if (key === 'type') label = value;
-            if (key === 'location') label = value;
-            if (key === 'salary') label = value;
+            let label = value;
             
             return (
               <div 
@@ -216,24 +249,48 @@ const Search = () => {
       )}
 
       <section className="py-2">
-        {loading ? (
+        {isLoading ? (
           <div className="flex flex-col items-center justify-center py-12">
-            <Loader2 className="h-10 w-10 text-primary animate-spin mb-4" />
+            <CircleEllipsis className="h-10 w-10 text-primary animate-spin mb-4" />
             <p className="text-gray-600 dark:text-gray-400">Загрузка вакансий...</p>
           </div>
-        ) : jobs.length > 0 ? (
+        ) : vacancies.length > 0 ? (
           <div>
             <div className="mb-3">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Найдено <span className="font-medium text-gray-900 dark:text-white">{jobs.length}</span> вакансий
+                Найдено <span className="font-medium text-gray-900 dark:text-white">{vacanciesPage?.total || vacancies.length}</span> вакансий
               </p>
             </div>
             
             <div className="space-y-3">
-              {jobs.map((job) => (
-                <JobCardCompact key={job.id} job={job} />
-              ))}
+              {vacancies.map((vacancy) => {
+                const jobListing = mapVacancyToJobListing(vacancy);
+                return <JobCard key={vacancy.id} job={jobListing} />;
+              })}
             </div>
+            
+            {/* Pagination could be added here if needed */}
+            {vacanciesPage?.pages && vacanciesPage.pages > 1 && (
+              <div className="mt-6 flex justify-center gap-2">
+                <Button
+                  variant="outline"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(prev => prev - 1)}
+                >
+                  Предыдущая
+                </Button>
+                <span className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400">
+                  {currentPage} из {vacanciesPage.pages}
+                </span>
+                <Button
+                  variant="outline"
+                  disabled={currentPage >= vacanciesPage.pages}
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                >
+                  Следующая
+                </Button>
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-center">
