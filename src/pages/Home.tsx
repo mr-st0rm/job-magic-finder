@@ -7,13 +7,14 @@ import { useUser } from '@/contexts/UserContext';
 import SearchForm from '@/components/SearchForm';
 import { useToast } from '@/hooks/use-toast';
 import { useVacancies } from '@/hooks/useVacancies';
+import { mapVacancyToJobListing } from '@/utils/vacancyMapper';
 
 /**
  * Section component to display a list of jobs with a title
  */
-const JobSection = ({ title, jobs, featured = false }: { 
+const JobSection = ({ title, vacancies, featured = false }: { 
   title: string; 
-  jobs: any[]; 
+  vacancies: any[]; 
   featured?: boolean 
 }) => (
   <section className="py-4">
@@ -22,9 +23,12 @@ const JobSection = ({ title, jobs, featured = false }: {
     </h2>
     
     <div className="space-y-4">
-      {jobs.map((job) => (
-        <JobCard key={job.id} job={job} featured={featured} />
-      ))}
+      {vacancies.map((vacancy) => {
+        const jobListing = mapVacancyToJobListing(vacancy);
+        return (
+          <JobCard key={vacancy.id} job={jobListing} featured={featured} />
+        );
+      })}
     </div>
   </section>
 );
@@ -76,7 +80,11 @@ const Home = () => {
 
   // Show loading spinner while data is being fetched
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+      <div className="flex justify-center items-center min-h-[calc(100vh-8rem)]">
+        <CircleEllipsis className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   const featuredJobs = featuredPage?.items || [];
@@ -92,15 +100,15 @@ const Home = () => {
 
       {/* Job listing sections */}
       {recommendedJobs.length > 0 && (
-        <JobSection title="Рекомендуемые вакансии" jobs={recommendedJobs} />
+        <JobSection title="Рекомендуемые вакансии" vacancies={recommendedJobs} />
       )}
       
       {featuredJobs.length > 0 && (
-        <JobSection title="Выделенные вакансии" jobs={featuredJobs} featured={true} />
+        <JobSection title="Выделенные вакансии" vacancies={featuredJobs} featured={true} />
       )}
       
       {recentJobs.length > 0 && (
-        <JobSection title="Новые вакансии" jobs={recentJobs} />
+        <JobSection title="Новые вакансии" vacancies={recentJobs} />
       )}
     </div>
   );

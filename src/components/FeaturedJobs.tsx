@@ -3,6 +3,7 @@ import { useRef } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import JobCard from './JobCard';
 import { useVacancies } from '@/hooks/useVacancies';
+import { mapVacancyToJobListing } from '@/utils/vacancyMapper';
 import { cn } from '@/lib/utils';
 
 export const FeaturedJobs = () => {
@@ -77,11 +78,14 @@ export const FeaturedJobs = () => {
           className="flex overflow-x-auto pb-4 -mx-4 px-4 space-x-4 scrollbar-hide"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {featuredJobs.map((job) => (
-            <div key={job.id} className="flex-shrink-0 w-full sm:w-[350px]">
-              <JobCard job={job} featured={true} />
-            </div>
-          ))}
+          {featuredJobs.map((vacancy) => {
+            const jobListing = mapVacancyToJobListing(vacancy);
+            return (
+              <div key={vacancy.id} className="flex-shrink-0 w-full sm:w-[350px]">
+                <JobCard job={jobListing} featured={true} />
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>
