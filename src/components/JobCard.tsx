@@ -1,7 +1,7 @@
 
 import { Link } from 'react-router-dom';
 import { Clock, MapPin, Briefcase, Sparkles } from 'lucide-react';
-import { JobListing } from '@/data/jobs';
+import { JobListing } from '@/types/job';
 import { cn } from '@/lib/utils';
 
 interface JobCardProps {

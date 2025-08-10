@@ -1,6 +1,6 @@
 
 import { Vacancy } from '@/types/vacancy';
-import { JobListing } from '@/data/jobs';
+import { JobListing } from '@/types/job';
 
 export const mapVacancyToJobListing = (vacancy: Vacancy): JobListing => {
   const formatSalary = () => {

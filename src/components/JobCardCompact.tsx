@@ -1,7 +1,7 @@
 
 import { useNavigate } from 'react-router-dom';
 import { MapPin, Briefcase, Sparkles } from 'lucide-react';
-import { JobListing } from '@/data/jobs';
+import { JobListing } from '@/types/job';
 import { cn } from '@/lib/utils';
 
 interface JobCardCompactProps {

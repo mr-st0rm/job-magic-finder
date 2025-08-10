@@ -16,7 +16,10 @@ import {
   MessageSquare
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { getJobById, JobListing } from '@/data/jobs';
+import { useVacancy } from '@/hooks/useVacancy';
+import { mapVacancyToJobListing } from '@/utils/vacancyMapper';
+import { api } from '@/utils/api';
+import { JobListing } from '@/types/job';
 import { useToast } from '@/components/ui/use-toast';
 import { useUser } from '@/contexts/UserContext';
 
@@ -30,7 +33,6 @@ const JobDetail = () => {
   
   // State
   const [job, setJob] = useState<JobListing | null>(null);
-  const [loading, setLoading] = useState(true);
   const [contactsVisible, setContactsVisible] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   
@@ -39,36 +41,19 @@ const JobDetail = () => {
   const { toast } = useToast();
   const { role } = useUser();
 
-  /**
-   * Fetch job details when component mounts or ID changes
-   */
-  useEffect(() => {
-    fetchJobDetails();
-  }, [id]);
+  // Load vacancy via API and map to JobListing
+  const vacancyId = Number(id);
+  const { data: vacancy, isLoading } = useVacancy(vacancyId);
 
-  /**
-   * Fetch job details from API
-   * TODO: Replace with actual API call
-   * Expected request: GET /api/jobs/{id}
-   * Expected response: { job: JobListing }
-   */
-  const fetchJobDetails = () => {
-    setLoading(true);
-    
-    // Simulate API call with timeout
-    setTimeout(() => {
-      if (id) {
-        const jobData = getJobById(id);
-        if (jobData) {
-          setJob(jobData);
-          
-          // Track job view
-          trackJobView(id);
-        }
-      }
-      setLoading(false);
-    }, 300);
-  };
+  useEffect(() => {
+    if (vacancy) {
+      const mapped = mapVacancyToJobListing(vacancy);
+      setJob(mapped);
+      // Track job view
+      api.trackVacancyView(vacancy.id);
+      // TODO: backend URL for trackVacancyView — POST /vacancy/{id}/view
+    }
+  }, [vacancy]);
 
   /**
    * Track that user viewed this job
@@ -109,15 +94,23 @@ const JobDetail = () => {
    * Expected request: POST /api/jobs/{id}/favorite (or DELETE to remove)
    * Expected response: { success: boolean, isFavorite: boolean }
    */
-  const toggleFavorite = () => {
-    setIsFavorite(!isFavorite);
-    
-    toast({
-      title: isFavorite ? 'Удалено из избранного' : 'Добавлено в избранное',
-      description: isFavorite ? 'Вакансия удалена из избранного' : 'Вакансия добавлена в избранное'
-    });
-    
-    // TODO: Send API request to add/remove from favorites
+  const toggleFavorite = async () => {
+    const next = !isFavorite;
+    setIsFavorite(next);
+    try {
+      if (vacancyId) {
+        await api.toggleVacancyFavorite(vacancyId, next);
+        // TODO: backend URL for toggleVacancyFavorite — POST/DELETE /vacancy/{id}/favorite
+      }
+      toast({
+        title: next ? 'Добавлено в избранное' : 'Удалено из избранного',
+        description: next ? 'Вакансия добавлена в избранное' : 'Вакансия удалена из избранного'
+      });
+    } catch (e) {
+      // revert on error
+      setIsFavorite(!next);
+      toast({ title: 'Ошибка', description: 'Не удалось обновить избранное', variant: 'destructive' });
+    }
   };
 
   /**
@@ -126,16 +119,20 @@ const JobDetail = () => {
    * Expected request: POST /api/jobs/{id}/contacts-viewed
    * Expected response: { success: boolean, contacts: { phone, email, telegram } }
    */
-  const showContacts = () => {
+  const showContacts = async () => {
     setContactsVisible(true);
-    
-    // Track contact view
-    console.log('Просмотр контактов для вакансии id:', id);
-    // TODO: Send API request to track contact view
+    try {
+      if (vacancyId) {
+        await api.trackVacancyContactsViewed(vacancyId);
+        // TODO: backend URL for trackVacancyContactsViewed — POST /vacancy/{id}/contacts-viewed
+      }
+    } catch (e) {
+      console.warn('Не удалось зафиксировать просмотр контактов');
+    }
   };
 
   // Show loading spinner while data is being fetched
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="container-custom px-4 py-8 flex justify-center">
         <CircleEllipsis className="h-8 w-8 animate-spin text-primary" />
