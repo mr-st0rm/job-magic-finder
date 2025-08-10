@@ -51,7 +51,7 @@ const Search = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const filters = buildFilters();
   
-  const { data: vacanciesPage, isLoading } = useVacancies(filters, currentPage, 20);
+  const { data: vacanciesPage, isLoading, refetch } = useVacancies(filters, currentPage, 20);
   const vacancies = vacanciesPage?.items || [];
 
   const initialFilters = {
@@ -79,6 +79,8 @@ const Search = () => {
     });
     
     setSearchParams(params);
+    // Force refetch even if params are unchanged
+    refetch();
   };
 
   const handleFilterChange = (key: string, value: string) => {
