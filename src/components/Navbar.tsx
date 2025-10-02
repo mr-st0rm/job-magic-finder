@@ -63,20 +63,20 @@ export const Navbar = () => {
 
         {/* Desktop Action Buttons */}
         <div className="hidden md:flex items-center space-x-4">
-          <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors">
-            <Search className="h-5 w-5 text-gray-600" />
+          <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+            <Search className="h-5 w-5 text-gray-600 dark:text-gray-300" />
           </button>
-          <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors">
-            <Bell className="h-5 w-5 text-gray-600" />
+          <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+            <Bell className="h-5 w-5 text-gray-600 dark:text-gray-300" />
           </button>
-          <button className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors">
-            <User className="h-5 w-5 text-gray-600" />
+          <button className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+            <User className="h-5 w-5 text-gray-600 dark:text-gray-300" />
           </button>
         </div>
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden p-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none"
+          className="md:hidden p-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none"
           onClick={toggleMenu}
         >
           {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -85,7 +85,7 @@ export const Navbar = () => {
 
       {/* Mobile Menu */}
       <div className={cn(
-        'fixed inset-0 bg-white z-40 transform transition-transform duration-300 ease-in-out md:hidden pt-16',
+        'fixed inset-0 bg-white dark:bg-gray-900 z-40 transform transition-transform duration-300 ease-in-out md:hidden pt-16',
         isMenuOpen ? 'translate-x-0' : 'translate-x-full'
       )}>
         <div className="flex flex-col p-4 space-y-4">
@@ -114,16 +114,16 @@ export const Navbar = () => {
           >
             Разместить вакансию
           </NavLink>
-          <div className="border-t border-gray-200 pt-4 mt-4">
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
             <div className="flex items-center space-x-4">
-              <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors">
-                <Search className="h-5 w-5 text-gray-600" />
+              <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                <Search className="h-5 w-5 text-gray-600 dark:text-gray-300" />
               </button>
-              <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors">
-                <Bell className="h-5 w-5 text-gray-600" />
+              <button className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                <Bell className="h-5 w-5 text-gray-600 dark:text-gray-300" />
               </button>
-              <button className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors">
-                <User className="h-5 w-5 text-gray-600" />
+              <button className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                <User className="h-5 w-5 text-gray-600 dark:text-gray-300" />
               </button>
             </div>
           </div>

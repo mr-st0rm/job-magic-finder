@@ -243,7 +243,7 @@ const EditJob = () => {
                       <SelectTrigger className={errors.company_id ? 'border-destructive' : ''}>
                         <SelectValue placeholder="Выберите компанию" />
                       </SelectTrigger>
-                      <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-200 shadow-lg">
+                      <SelectContent>
                         {companies.map((company) => (
                           <SelectItem key={company.id} value={company.id.toString()}>
                             {company.name}
@@ -264,7 +264,7 @@ const EditJob = () => {
                     <SelectTrigger className={errors.category_id ? 'border-destructive' : ''}>
                       <SelectValue placeholder="Выберите категорию" />
                     </SelectTrigger>
-                    <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-200 shadow-lg">
+                    <SelectContent>
                       {categories.map((category) => (
                         <SelectItem key={category.id} value={category.id.toString()}>
                           {category.name}
@@ -298,7 +298,7 @@ const EditJob = () => {
                     <SelectTrigger className={errors.work_type ? 'border-destructive' : ''}>
                       <SelectValue placeholder="Выберите тип" />
                     </SelectTrigger>
-                    <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-200 shadow-lg">
+                    <SelectContent>
                       <SelectItem value="FULL_TIME">Полная занятость</SelectItem>
                       <SelectItem value="PART_TIME">Частичная занятость</SelectItem>
                       <SelectItem value="CONTRACT">Проектная работа</SelectItem>
@@ -342,7 +342,7 @@ const EditJob = () => {
                     <SelectTrigger>
                       <SelectValue placeholder="Валюта" />
                     </SelectTrigger>
-                    <SelectContent className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-200 shadow-lg">
+                    <SelectContent>
                       <SelectItem value="RUB">₽ Рубль</SelectItem>
                       <SelectItem value="USD">$ Доллар</SelectItem>
                       <SelectItem value="EUR">€ Евро</SelectItem>
