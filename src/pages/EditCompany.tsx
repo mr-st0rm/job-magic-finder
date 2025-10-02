@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
-import { companiesApi, CompanyCreateSchema, Company } from '@/utils/companiesApi';
+import { CompanyCreateSchema, Company } from '@/types/company';
+import { api } from '@/utils/api';
 import { Building2, Globe, MapPin, Users, Calendar } from 'lucide-react';
 
 const EditCompany = () => {
@@ -32,31 +33,20 @@ const EditCompany = () => {
 
   const loadCompany = async () => {
     try {
-      // TODO: Заменить на реальный API вызов
-      // const company = await companiesApi.getCompany(id!);
+      const companies = await api.getCompanies();
+      const company = companies.find(c => c.id.toString() === id);
       
-      // Моковые данные
-      const mockCompany: Company = {
-        id: '1',
-        name: 'ТехноИнновации',
-        description: 'Разработка современных IT-решений',
-        website: 'https://techno-innovations.ru',
-        location: 'Москва',
-        employees_count: 150,
-        founded_year: 2018,
-        created_at: '2024-01-01',
-        updated_at: '2024-01-01'
-      };
+      if (!company) {
+        throw new Error('Company not found');
+      }
 
-      setTimeout(() => {
-        setValue('name', mockCompany.name);
-        setValue('description', mockCompany.description || '');
-        setValue('website', mockCompany.website || '');
-        setValue('location', mockCompany.location || '');
-        setValue('employees_count', mockCompany.employees_count || undefined);
-        setValue('founded_year', mockCompany.founded_year || undefined);
-        setIsLoading(false);
-      }, 500);
+      setValue('name', company.name);
+      setValue('description', company.description || '');
+      setValue('website', company.website || '');
+      setValue('location', company.location || '');
+      setValue('employees_count', company.employees_count || undefined);
+      setValue('founded_year', company.founded_year || undefined);
+      setIsLoading(false);
       
     } catch (error) {
       toast({
@@ -72,18 +62,13 @@ const EditCompany = () => {
     try {
       setIsSubmitting(true);
       
-      // TODO: Заменить на реальный API вызов
-      // await companiesApi.updateCompany(id!, data);
+      await api.updateCompany(Number(id), data);
       
-      console.log('Обновление компании:', data);
-      
-      setTimeout(() => {
-        toast({
-          title: 'Компания обновлена',
-          description: 'Данные компании успешно сохранены'
-        });
-        navigate('/my-companies');
-      }, 1000);
+      toast({
+        title: 'Компания обновлена',
+        description: 'Данные компании успешно сохранены'
+      });
+      navigate('/my-companies');
       
     } catch (error) {
       toast({

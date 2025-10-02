@@ -1,6 +1,4 @@
-
 import { retrieveRawInitData } from "@telegram-apps/sdk";
-import * as process from "node:process";
 
 interface FetchOptions extends RequestInit {
   params?: Record<string, string>;
@@ -18,7 +16,8 @@ export const createApiClient = () => {
     }
 
     // Построение URL с параметрами
-    const url = new URL(endpoint, 'http://localhost:8000');
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+    const url = new URL(endpoint, baseUrl);
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
         url.searchParams.append(key, value);

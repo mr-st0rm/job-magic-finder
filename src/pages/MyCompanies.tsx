@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { Building2, Plus, Edit, Trash2, Users, Globe, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import { companiesApi, Company } from '@/utils/companiesApi';
+import { Company } from '@/types/company';
+import { api } from '@/utils/api';
 
 const MyCompanies = () => {
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -19,28 +20,9 @@ const MyCompanies = () => {
   const loadCompanies = async () => {
     try {
       setIsLoading(true);
-      // TODO: Заменить на реальный API вызов
-      // const data = await companiesApi.getMyCompanies();
-      
-      // Моковые данные для демонстрации
-      const mockData: Company[] = [
-        {
-          id: '1',
-          name: 'ТехноИнновации',
-          description: 'Разработка современных IT-решений',
-          website: 'https://techno-innovations.ru',
-          location: 'Москва',
-          employees_count: 150,
-          founded_year: 2018,
-          created_at: '2024-01-01',
-          updated_at: '2024-01-01'
-        }
-      ];
-      
-      setTimeout(() => {
-        setCompanies(mockData);
-        setIsLoading(false);
-      }, 500);
+      const data = await api.getCompanies();
+      setCompanies(data);
+      setIsLoading(false);
       
     } catch (error) {
       toast({
@@ -52,11 +34,9 @@ const MyCompanies = () => {
     }
   };
 
-  const handleDeleteCompany = async (id: string) => {
+  const handleDeleteCompany = async (id: number) => {
     try {
-      // TODO: Заменить на реальный API вызов
-      // await companiesApi.deleteCompany(id);
-      
+      // Note: Delete endpoint not available in current API
       setCompanies(prev => prev.filter(company => company.id !== id));
       toast({
         title: 'Компания удалена',

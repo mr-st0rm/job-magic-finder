@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
-import { companiesApi, CompanyCreateSchema } from '@/utils/companiesApi';
+import { CompanyCreateSchema } from '@/types/company';
+import { api } from '@/utils/api';
 import { Building2, Globe, MapPin, Users, Calendar } from 'lucide-react';
 
 const CreateCompany = () => {
@@ -25,18 +26,13 @@ const CreateCompany = () => {
     try {
       setIsSubmitting(true);
       
-      // TODO: Заменить на реальный API вызов
-      // await companiesApi.createCompany(data);
+      await api.createCompany(data);
       
-      console.log('Создание компании:', data);
-      
-      setTimeout(() => {
-        toast({
-          title: 'Компания создана',
-          description: 'Компания успешно добавлена в ваш список'
-        });
-        navigate('/my-companies');
-      }, 1000);
+      toast({
+        title: 'Компания создана',
+        description: 'Компания успешно добавлена в ваш список'
+      });
+      navigate('/my-companies');
       
     } catch (error) {
       toast({

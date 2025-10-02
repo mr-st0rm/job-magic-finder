@@ -53,13 +53,6 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				job: {
-					blue: '#3575E2',
-					green: '#329B7B',
-					orange: '#E05D2F',
-					purple: '#8A70D6',
-					teal: '#0E9E9E'
-				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',
