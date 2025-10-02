@@ -79,8 +79,7 @@ const Search = () => {
     });
     
     setSearchParams(params);
-    // Force refetch even if params are unchanged
-    refetch();
+    setCurrentPage(1);
   };
 
   const handleFilterChange = (key: string, value: string) => {
@@ -99,6 +98,7 @@ const Search = () => {
     });
     
     setSearchParams(params);
+    setCurrentPage(1);
     setIsFilterOpen(false);
   };
 

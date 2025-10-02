@@ -66,7 +66,10 @@ export const SearchForm = ({ className, defaultValues, onSearch }: SearchFormPro
         </div>
         
         <div className="w-full sm:w-auto">
-          <Button type="submit" className="w-full px-8 py-3 h-auto">
+          <Button 
+            type="submit" 
+            className="w-full px-8 py-3 h-auto"
+          >
             Поиск
           </Button>
         </div>
